@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="#">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="dashboardForm" name="dashboardForm">
+        <h1>Tournament Dashboard</h1>
+        <label>Load Existing Tournament</label>
+        </br>
+        <select id="tournamentList" name="tournamentList" style="width: 280px;">
+        </select>        
+        <input class="create_buttons" type="button" value="Load Tournament" onclick="loadTournamentClicked()"> 
+        <input class="create_buttons" style="font-weight: bold;width: 220px;" type="button"  value="Create Tournament" onclick="window.open('create_tournament.html')"> 
+    </form>
+</body>
+<script type="text/javascript" src="tournament_dashboard.js"></script>
+</html>

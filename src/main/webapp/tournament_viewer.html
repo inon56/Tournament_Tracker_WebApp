@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="#">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament Viewer</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <form id="tournamentViewerForm" name="tournamentViewerForm">
+        <div class="division under">
+            <label style="padding: 20px;">Tournament: </label><label id="tournamentName" name="tournamentName"></label>
+            <label style="padding: 10px;  top:2px;">Round</label>
+            <select id="round" style="width: 220px;"></select>
+            <div style="display: block; padding: 0px 4px 0px 6px;">
+                <input style="float: left" type="checkbox" id="unplayedOnly" name="unplayedOnly" size="">
+                <label >Unplayed Only</label><br>
+            </div>
+
+            <select id="matchupList" style="width: 220px; font-size: medium;" size="10">
+            </select>
+        </div>
+        <div class="division">
+            <label id="teamOneName">Not yet set</label><br>
+            <label>Score</label>
+            <input type="text" id="teamOneScore" name="teamOneScore">
+            <label style="padding: 10%;">-VS-</label><br>
+            <label id="teamTwoName">Not yet set</label><br>
+            <label>Score</label>
+            <input type="text" id="teamTwoScore" name="teamTwoScore">    
+        </div>
+        <div class="division">
+            <label id="winner" style="position: absolute; padding-left: 100px; top:5%; font-weight: bold;"></label>
+            <input class="create_buttons" style="margin: 40%; font-weight: bold;" type="button" value="Score" onclick="scoreButtonClicked()">             
+            
+        </div>
+       
+    </form>
+</body>
+<script type="text/javascript" src="tournament_dashboard.js"></script>
+<script type="text/javascript" src="tournament_viewer.js"></script>
+</html>
