@@ -1,7 +1,7 @@
 let teamsList = ["dodgers", "lakers", "celtic"];
 let prizesList = ["first", "second"];
-let teamsInTournamentList = [];
-let prizesInTournamentList = [];
+let enteredTeams = [];
+let enteredPrizes = [];
 
 window.onload = () => {
     populateTeamsDropDownList();
@@ -9,17 +9,16 @@ window.onload = () => {
     // getTournaments();
 }
 
+// GET tournaments
 function getTournaments()
 {
-    // GET tournaments
     fetch("tournamentServlet", {
         method: "GET",
         headers: {'Accept': 'application/json'} // Explicitly asking for JSON
     })
     .then(res => {return res.json()}) // res.json returns a promise 
     .then((data) => {
-        updateTeamsList(data);
-        updatePrizesList(data);
+        updateLists(data);
     })
     .then(() => {
         populateTeamDropDownList();
@@ -27,14 +26,20 @@ function getTournaments()
     })
 }
 
-function updateTeamsList(data)
+// json: { "teams": ["cool-team","super-team", ...], "prizes": ["first", "second", ...]  }
+function updateLists(data)
 {
     // teamsList
-}
+    for (const team of data["teams"])
+    {
+        teamsList.push(team);
+    }
 
-function updatePrizesList(data)
-{
     // prizesList
+    for (const prize of data["prizes"])
+    {
+        prizesList.push(prize);
+    }
 }
 
 function populateTeamsDropDownList()
@@ -72,9 +77,9 @@ function addTeamClicked()
     teamsInTournamentSelected.add(option);
 
     // update lists
-    teamsInTournamentList.push(teamText);
+    enteredTeams.push(teamText);
      
-    let index = teamsList.indexOf(teamValue) // TODO maybe need to add value
+    const index = teamsList.indexOf(teamValue);
     if (index != -1)
         teamsList.splice(index,1);
     
@@ -95,9 +100,9 @@ function removeSelectedTeamClicked()
     // update lists
     teamsList.push(teamText); // TODO maybe need to add value
 
-    let index = teamsInTournamentList.indexOf(teamValue) // TODO maybe need to add value
+    let index = enteredTeams.indexOf(teamValue) // TODO maybe need to add value
     if (index != -1)
-        teamsInTournamentList.splice(index,1);
+        enteredTeams.splice(index,1);
 }
 
 function addPrizeClicked()
@@ -113,7 +118,7 @@ function addPrizeClicked()
     prizesInTournametSelected.add(option);
 
     // update lists
-    prizesInTournamentList.push(prizeText); 
+    enteredPrizes.push(prizeText);
     
     let index = prizesList.indexOf(prizeValue)
     if (index != -1)
@@ -122,10 +127,10 @@ function addPrizeClicked()
 
 function removeSelectedPrizeClicked()
 {
-    let prizesInTournametSelected = document.getElementById("prizesInTournamentList");
-    let prizeValue = prizesInTournametSelected.value;
-    let prizeText = prizesInTournametSelected.options[prizesInTournametSelected.selectedIndex].text;
-    prizesInTournametSelected.remove(prizesInTournametSelected.selectedIndex);
+    let prizesInTournamentSelected = document.getElementById("prizesInTournamentList");
+    let prizeValue = prizesInTournamentSelected.value;
+    let prizeText = prizesInTournamentSelected.options[prizesInTournamentSelected.selectedIndex].text;
+    prizesInTournamentSelected.remove(prizesInTournamentSelected.selectedIndex);
 
     let prizeSelected = document.getElementById("prizesList");
     let option = document.createElement("option");
@@ -135,9 +140,9 @@ function removeSelectedPrizeClicked()
     // update lists
     prizesList.push(prizeText); 
 
-    let index = prizesInTournamentList.indexOf(prizeValue)
-    if (index != -1)
-        prizesInTournamentList.splice(index,1);
+    let index = enteredPrizes.indexOf(prizeValue)
+    if (index !== -1)
+        enteredPrizes.splice(index,1);
 }
 
 
@@ -145,18 +150,6 @@ function createTournamentClicked()
 {
     let tournamentName = document.getElementById("tournamentName").value;
     let entryFee = document.getElementById("entryFee").value;
-
-    // TODO: maybe delete it
-    /*
-    let teamsList = document.getElementById("teamsList");
-    let prizesList = document.getElementById("prizesList");
-    const tournament = {
-        "tournamentName": tournamentName,
-        "entryFee": entryFee,
-        "teamsList": teamsList,
-        "prizesList": prizesList
-    };
-     */
 
     validateCreateTournament(tournamentName, entryFee);
 
@@ -198,7 +191,7 @@ function postTournament(tournamentName, entryFee)
     //     prizesListSelected.push(prizesListSelected.options[i].text);
     // }
 
-    const data = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": teamsInTournamentList, "prizes": prizesInTournamentList};
+    const data = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams, "enteredPrizes": enteredPrizes};
 
 	fetch("tournamentServlet", {
 	    method: 'POST',

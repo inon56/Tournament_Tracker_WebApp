@@ -8,9 +8,8 @@ let teamPlayersList = [];
 
 window.onload = () => {
     populatePlayersDropDown();
-    getPlayers();
+    // getPlayers();
 }
-
 
 function getPlayers()
 {
@@ -19,7 +18,6 @@ function getPlayers()
     })
     .then(res => {return res.json()})
     .then((data) => {
-        console.log(data);
         // updatePlayersLists(data);
     })
     // .then(() => {
@@ -31,7 +29,7 @@ function getPlayers()
 }
 
 // args: {  "players": [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ], "teamPlayers [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ] }
-// adding the players to the availablePlayersArray
+// adding the players to the availablePlayersList
 function updatePlayersLists(data)
 {
     let players = JSON.parse(data);
@@ -52,84 +50,85 @@ function populatePlayersDropDown()
     }
 }
 
-// add player to drop down list
+// add player to drop-down list
 function addSelectedPlayerClicked()
 {
-    // let playerSelected = document.getElementById("playersList").value;
-    // let playerText = playerSelected.options[playerSelected.selectedIndex].text;
-    // playerSelected.remove(playerSelected.selectedIndex);
-    //
-    // let teamPlayerSelected = document.getElementById("teamPlayersList");
-    // let option = document.createElement("option");
-    // option.text = playerText;
-    // teamPlayerSelected.add(option);
+    let playerSelected = document.getElementById("playersList");
+    let playerValue = playerSelected.value;
+    let playerText = playerSelected.options[playerSelected.selectedIndex].text;
+    playerSelected.remove(playerSelected.selectedIndex);
 
+    let teamPlayerAdded = document.getElementById("teamPlayersList");
+    let option = document.createElement("option");
+    option.text = playerText;
+    teamPlayerAdded.add(option);
 
-    let playerSelected = document.getElementById("playersList")
-    let playerText = playerSelected.options[playerSelected.selectedIndex].value;
-    // // playerSelected.remove(playerSelected.selectedIndex);
-    // playerSelected.options[playerSelected.selectedIndex].remove();
+    const array = playerText.split(" ");
+    const email = array[2];
 
-    // let teamPlayerSelected = document.getElementById("teamPlayersList");
-    // let option = document.createElement("option");
-    // option.text = playerText;
-    // teamPlayerSelected.add(option);
-
-    const playerIndex = availablePlayersList.findIndex((element) =>
+    const playerIndex = availablePlayersList.findIndex((availablePlayersList) =>
     {
-        return element === JSON.parse(playerText);
+        return availablePlayersList["emailAddress"] === email;
     })
 
     // update lists
-    const index = availablePlayersList.indexOf(playerIndex)
-    if (index !== -1)
+    // teamPlayersList.push(playerValue);
+
+    if (playerIndex !== -1)
     {
-        const player = availablePlayersList.splice(index, 1);
+        let player = availablePlayersList.splice(playerIndex, 1)[0];
         teamPlayersList.push(player);
     }
-
 }
 
-
-// remove the selected player from the list
+// remove the selected player from the drop-down list
 function removeSelectedTeamPlayerClicked()
 {    
-    // let teamPlayersSelected = document.getElementById("teamPlayersList");
-    // let playerText = teamPlayersSelected.options[teamPlayersSelected.selectedIndex].value;
-    // teamPlayersSelected.remove(teamPlayersSelected.selectedIndex);
-    //
-    // let playerSelected = document.getElementById("teamsList");
-    // let option = document.createElement("option");
-    // option.text = playerText;
-    // playerSelected.add(option);
+    let playerSelected = document.getElementById("teamPlayersList");
+    let playerValue = playerSelected.value;
+    let playerText = playerSelected.options[playerSelected.selectedIndex].text;
+    playerSelected.remove(playerSelected.selectedIndex);
 
-    // const playerValue = teamPlayersList.findIndex(object =>
-    // {
-    //     return object['emailAddress'] ===
-    // })
+    let playerRemoved = document.getElementById("playersList");
+    let option = document.createElement("option");
+    option.text = playerText;
+    playerRemoved.add(option);
 
+    const array = playerText.split(" ");
+    const email = array[2];
+
+    const playerIndex = teamPlayersList.findIndex(() =>
+    {
+        return teamPlayersList["emailAddress"] === email;
+    })
 
     // update lists
-    const index = teamPlayersList.indexOf(playerValue)
-    if (index !== -1)
+    if (playerIndex !== -1)
     {
-        const player = teamPlayersList.splice(index, 1);
+        let player = teamPlayersList.splice(playerIndex, 1)[0];
         availablePlayersList.push(player);
     }
 }
+
 
 function createTeamClicked()
 {
     let teamName = document.getElementById("teamName").value;
 
     // if (!validateCreateTeam(teamName))
-    //     return;
+    // {
+        let emails = [];
+        for (const player of teamPlayersList)
+        {
+            emails.push(player['emailAddress']);
+        }
 
-    const team = {"teamName": teamName, "teamPlayersList": teamPlayersList};
-    postTeam(team);
+        const team = {"teamName": teamName, "teamMembersEmails": emails};
+        postTeam(team);
 
-    // clear teamName field
-    document.getElementById("teamName").value = "";
+        // clear teamName field
+        document.getElementById("teamName").value = "";
+    // }
 }
 
 function validateCreateTeam(teamName)
@@ -146,14 +145,13 @@ function validateCreateTeam(teamName)
         alert("Invalid team name, letters only")        
         return false;
     }
+    return true;
 }
 
-// POST availablePlayers and teamPlayers
-// { "players": availablePlayersList }
+
+// { "teamName": "name", "teamMembersEmails": ["email_1", "email_2", "email_3"] }
 function postTeam(team)
 {
-    console.log(team);
-
 	fetch("teamServlet", {
 	    method: 'POST',
 	    headers: { "content-type": "application/json" },

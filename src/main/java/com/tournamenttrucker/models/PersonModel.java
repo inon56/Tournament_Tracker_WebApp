@@ -15,6 +15,14 @@ public class PersonModel {
     public PersonModel() {
     }
 
+    public PersonModel(String firstName, String lastName, String emailAddress, String cellPhoneNumber) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.emailAddress = emailAddress;
+        this.cellphoneNumber = cellPhoneNumber;
+    }
+
+
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -31,18 +39,8 @@ public class PersonModel {
         this.cellphoneNumber = cellphoneNumber;
     }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 
-    private String fullName;
 
-    public PersonModel(String firstName, String lastName, String emailAddress, String cellPhoneNumber) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.emailAddress = emailAddress;
-        this.cellphoneNumber = cellPhoneNumber;
-    }
 
     public int getId() {
         return id;
@@ -74,9 +72,6 @@ public class PersonModel {
                 '}';
     }
 
-    public String getFullName() {
-        return "";//$"{FirstName} {LastName}";;
-    }
 
     public void setId(int id) {
         this.id = id;

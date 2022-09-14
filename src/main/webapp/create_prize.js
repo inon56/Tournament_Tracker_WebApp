@@ -1,4 +1,4 @@
-window.onload = () => {getPrize()}
+// window.onload = () => {getPrize()}
 let prizesList =
     [
         {
@@ -17,6 +17,7 @@ function createPrizeClicked()
 
     if (validateCreatePrize(placeNumber, placeName, prizeValue))
     {
+        window.alert("ok");
         let prizeAmount = 0;
         let prizePercentage = 0;
         if (document.getElementById("prizeAmountRadio").checked)
@@ -24,14 +25,15 @@ function createPrizeClicked()
         else
             prizePercentage = prizeValue;
 
-        const prize = {
+        const prize = 
+        {
             "placeNumber": placeNumber,
             "placeName": placeName,
             "prizeAmount": prizeAmount,
             "prizePercentage": prizePercentage
         };
-        console.log("ok")
-        postPrize(prize);
+
+        // postPrize(prize);
 
         clearFields();
     }
@@ -113,6 +115,8 @@ function validateCreatePrize(placeNumber, placeName, prizeValue)
             return false;
         }        
     }
+
+    return true;
 }
 
 function clearFields()

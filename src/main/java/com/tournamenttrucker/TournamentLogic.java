@@ -9,15 +9,19 @@ import java.util.List;
 public class TournamentLogic {
 
     // A quarterback method
-    public static void CreateRounds(TournamentModel model)
+    public static void createRounds(TournamentModel model)
     {
         List<TeamModel> randomizedTeams = new ArrayList<>(model.getEnteredTeams());
         Collections.shuffle(randomizedTeams);
         int rounds = findNumberOfRounds(randomizedTeams.size());
-        int byes = numberOfByes(rounds, randomizedTeams.size());
+        model.getRounds().add(createFirstRound(randomizedTeams));
+        createOtherRounds(model, rounds);
 
-        model.getRounds().add(createFirstRound(byes, randomizedTeams));
-        CreateOtherRounds(model, rounds);
+//        int rounds = findNumberOfRounds(randomizedTeams.size());
+//        int byes = numberOfByes(rounds, randomizedTeams.size());
+//        model.getRounds().add(createFirstRound(byes, randomizedTeams));
+//        CreateOtherRounds(model, rounds);
+
     }
     private static int findNumberOfRounds(int teamCount)
     {
@@ -31,21 +35,22 @@ public class TournamentLogic {
         }
         return output;
     }
-    private static int numberOfByes(int rounds, int numberOfTeams)
-    {
-        int output = 0;
-        int totalTeams = 1;
 
-        for (int i = 1; i < rounds; i++)
-        {
-            totalTeams *= 2;
-        }
-        output = totalTeams - numberOfTeams;
+//    private static int numberOfByes(int rounds, int numberOfTeams)
+//    {
+//        int output = 0;
+//        int totalTeams = 1;
+//
+//        for (int i = 1; i < rounds; i++)
+//        {
+//            totalTeams *= 2;
+//        }
+//        output = totalTeams - numberOfTeams;
+//
+//        return output;
+//    }
 
-        return output;
-    }
-
-    private static List<MatchupModel> createFirstRound(int byes, List<TeamModel> teams)
+    private static List<MatchupModel> createFirstRound(List<TeamModel> teams)
     {
         List<MatchupModel> output = new ArrayList<>();
         MatchupModel curr = new MatchupModel();
@@ -55,25 +60,12 @@ public class TournamentLogic {
             MatchupEntryModel matchEntry = new MatchupEntryModel();
             matchEntry.setTeamCompeting(team);
             curr.getEntries().add(matchEntry);
-
-            // If we have byes available, so we have done with this matchup or if there are two teams
-            if (byes > 0 || curr.getEntries().size() > 1)
-            {
-                curr.setMatchupRound(1);
-                output.add(curr);
-                curr = new MatchupModel(); // Reuse this variable
-
-                if (byes > 0)
-                {
-                    byes--;
-                }
-            }
         }
         return output;
     }
 
      // Create every round after the first
-    private static void CreateOtherRounds(TournamentModel model, int rounds)
+    private static void createOtherRounds(TournamentModel model, int rounds)
     {
         int round = 2; // Current round
         List<MatchupModel> previousRound = model.getRounds().get(0);
@@ -102,13 +94,11 @@ public class TournamentLogic {
         }
     }
 
-
-
-    private static void CompleteTournament(TournamentModel model)
+    private static void completeTournament(TournamentModel model)
     {
         SQLConnector.CompleteTournament(model);
-//        TeamModel winners = model.getRounds().Last().First().Winner; // This is a link expression
-//        TeamModel runnerUp = model.getRounds().Last().First().Entries.Where(x => x.TeamCompeting != winners).First().TeamCompeting;
+//        TeamModel winners1 = model.getRounds().Last().First().Winner;
+//        TeamModel runnerUp2 = model.getRounds().Last().First().Entries.Where(x => x.TeamCompeting != winners).First().TeamCompeting;
 
         double winnerPrize = 0;
         double runnerUpPrize = 0;
@@ -118,18 +108,21 @@ public class TournamentLogic {
         {
             double totalIncome = model.getPrizes().size() * model.getEntryFee();
 
-//            PrizeModel firstPlacePrize = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault(); // FirstOrDefault meaning find the first value but if you dont find one then return null or 0 according to the type
-//            PrizeModel secondPlacePrize = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault();
+//            PrizeModel firstPlacePrize1 = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault(); // FirstOrDefault meaning find the first value but if you dont find one then return null or 0 according to the type
+//            PrizeModel secondPlacePrize2 = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault();
 
-//            if (firstPlacePrize != null)
-//            {
-//                winnerPrize = calculatePrizePayout(firstPlacePrize, totalIncome);
-//            }
-//
-//            if (secondPlacePrize != null)
-//            {
-//                runnerUpPrize = calculatePrizePayout(secondPlacePrize, totalIncome);
-//            }
+            PrizeModel firstPlacePrize = model.getPrizes().stream().filter((prize) -> prize.getPlaceNumber() == 1).findFirst().orElse(null);
+            PrizeModel secondPlacePrize = model.getPrizes().stream().filter((prize) -> prize.getPlaceNumber() == 1).findFirst().orElse(null);
+
+            if (firstPlacePrize != null)
+            {
+                winnerPrize = calculatePrizePayout(firstPlacePrize, totalIncome);
+            }
+
+            if (secondPlacePrize != null)
+            {
+                runnerUpPrize = calculatePrizePayout(secondPlacePrize, totalIncome);
+            }
         }
 
         // Send Email to all tournament

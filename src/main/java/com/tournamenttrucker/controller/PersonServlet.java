@@ -1,6 +1,7 @@
 package com.tournamenttrucker.controller;
 
 import com.google.gson.Gson;
+import com.tournamenttrucker.contracts.CreatePersonRequest;
 import com.tournamenttrucker.dataAccess.SQLConnector;
 import com.tournamenttrucker.models.PersonModel;
 import javax.servlet.ServletException;
@@ -10,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 
 @WebServlet(value = "/personServlet")
@@ -23,8 +25,6 @@ public class PersonServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
     {
         System.out.println("person servlet post");
-        Gson gson = new Gson();
-        PersonModel person = new PersonModel();
 
         // option 1:
 //        BufferedReader reader = req.getReader();
@@ -40,16 +40,17 @@ public class PersonServlet extends HttpServlet {
             sb.append(line);
         }
         reader.close();
+        System.out.println(sb);
 
-        person = gson.fromJson(sb.toString(), PersonModel.class);
-
-        System.out.println(person.toString());
-
-
-
-
+        Gson gson = new Gson();
+        CreatePersonRequest person = gson.fromJson(sb.toString(), CreatePersonRequest.class);
 
         SQLConnector.createPerson(person);
+
+        PrintWriter out = res.getWriter();
+        res.setContentType("application/json;charset=utf-8");
+        out.print("{\"dsd\":\"fdfd\"}");
+        out.close();
     }
 
 }

@@ -19,9 +19,6 @@ import java.util.List;
 @WebServlet(value = "/teamServlet")
 public class TeamServlet extends HttpServlet {
 
-//    private List<PersonModel> availablePlayers = new ArrayList<>();
-//    private List<PersonModel> teamPlayers = new ArrayList<>();
-
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
     {
         System.out.println("team servlet get");
@@ -36,28 +33,23 @@ public class TeamServlet extends HttpServlet {
 //        out.write(jsonString);
 //        out.close();
     }
-    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
         System.out.println("the team servlet post method called");
 
-        Gson gson = new Gson();
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
-
         while ((line = reader.readLine()) != null) {
             sb.append(line);
-            System.out.println(sb);
         }
         reader.close();
 
+        Gson gson = new Gson();
         CreateTeamRequest team = gson.fromJson(sb.toString(), CreateTeamRequest.class);
 
-        System.out.println(team.getTeamName());
+        System.out.println("the team:" + team);
+//        SQLConnector.createTeam(team);
 
-//        TeamModel model = new TeamModel(teamName, teamPlayers);
-//        SQLConnector.createTeam(model);
     }
-
-
 }

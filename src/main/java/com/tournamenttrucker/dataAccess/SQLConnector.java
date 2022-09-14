@@ -1,12 +1,17 @@
 package com.tournamenttrucker.dataAccess;
 
+import com.tournamenttrucker.contracts.CreatePersonRequest;
+import com.tournamenttrucker.contracts.CreatePrizeRequest;
 import com.tournamenttrucker.contracts.CreateTeamRequest;
 import com.tournamenttrucker.models.*;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 
 // server name - INON_PC
 // user name - INON_PC\leino
@@ -14,23 +19,30 @@ import java.util.List;
 public class SQLConnector implements IDataConnection {
 
 //    private static final String connectionUrl = "jdbc:sqlserver://localhost\\MSSQLSERVER;user=yakir;password=&UY^%Tr43e;encrypt=true;trustServerCertificate=true";
+//    private static final String connectionUrl = "jdbc:mysql://localhost:3306/tournaments";
+
+//    private static final String username = "root";
+//    private static final String password = "inon5656";
+    //    @Resource(name = "jdbc/myproject")
+    //    private DataSource dataSource;
+
     private static final String connectionUrl = "jdbc:sqlserver://localhost\\MSSQLSERVER;user=yakir;password=u&6yI84HFd36^;encrypt=true;trustServerCertificate=true";
 
-    // MYSQL example:
-//    private static final String connectionUrl = "jdbc:mysql://localhost:3306/database/sql_store";
-//    private static final String username = "root";
-//    private static final String password = "inon56";
-//
-//    public static void initConnection()
-//    {
-//        try {
-//            Connection connection = DriverManager.getConnection(connectionUrl,username, password);
-//            System.out.println("connected");
-//        } catch (SQLException e) {
-//            System.out.println("error connection");
-//        }
-//    }
-    // END
+    private static boolean initialized = false;
+
+    private static Connection getManualConnection() throws SQLException {
+        if (!initialized) {
+            try {
+//                Class.forName("com.mysql.jdbc.Driver");
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                initialized = true;
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return DriverManager.getConnection(connectionUrl); // , username, password
+    }
 
     public static void printPerson_All() {
         try (Connection connection = DriverManager.getConnection(connectionUrl);
@@ -56,43 +68,40 @@ public class SQLConnector implements IDataConnection {
         }
     }
 
-    public static void createPerson(PersonModel model)
+    public static void createPerson(CreatePersonRequest person)
     {
-
-        try (Connection connection = DriverManager.getConnection(connectionUrl);
-             CallableStatement myStmt = connection.prepareCall("{call dbo.spPeople_Insert(?,?,?,?)}"); // prepare the stored procedure call
+        try (
+             Connection connection = getManualConnection();
         ){
-            myStmt.setString(1, model.getFirstName());
-            myStmt.setString(2, model.getLastName());
-            myStmt.setString(3, model.getEmailAddress());
-            myStmt.setString(4, model.getCellphoneNumber());
-            myStmt.registerOutParameter(5, Types.INTEGER);
+            String sql = "insert into Person(FirstName,LastName,EmailAddress,CellphoneNumber) values(?,?,?,?)";
+            PreparedStatement statement = connection.prepareStatement(sql);
 
-            // call stored procedure
-            myStmt.execute();
+            statement.setString(1,person.getFirstName());
+            statement.setString(2,person.getLastName());
+            statement.setString(3,person.getEmailAddress());
+            statement.setString(4,person.getCellphoneNumber());
+            statement.execute();
+//            model.setId(myStmt.getInt(5));
 
-            model.setId(myStmt.getInt(5));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
-    public static void createPrize(PrizeModel model)
+    public static void createPrize(CreatePrizeRequest prize)
     {
         try (Connection connection = DriverManager.getConnection(connectionUrl);
-             CallableStatement myStmt = connection.prepareCall("{call dbo.spPrizes_Insert(?,?,?,?)}");
         ){
-            myStmt.setInt(1, model.getPlaceNumber());
-            myStmt.setString(2, model.getPlaceName());
-            myStmt.setDouble(3, model.getPrizeAmount());
-            myStmt.setDouble(4, model.getPrizePercentage());
-            myStmt.registerOutParameter(5, Types.INTEGER);
-//            myStmt.executeQuery("f")
-            // call stored procedure
-            myStmt.execute();
+            String sql = "insert into dbo.Prizes(PlaceNumber,PlaceName,PrizeAmount,PrizePrecentage) values(?,?,?,?)";
+            PreparedStatement statement = connection.prepareStatement(sql);
 
-            model.setId(myStmt.getInt(5));
+            statement.setInt(1,prize.getPlaceNumber());
+            statement.setString(2,prize.getPlaceName());
+            statement.setDouble(3,prize.getPrizeAmount());
+            statement.setDouble(4,prize.getPrizePercentage());
+            statement.execute();
+
+//            model.setId(myStmt.getInt(5));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -101,29 +110,63 @@ public class SQLConnector implements IDataConnection {
     public static void createTeam(CreateTeamRequest team)
     {
         try (Connection connection = DriverManager.getConnection(connectionUrl);
-             CallableStatement myStmt_1 = connection.prepareCall("{call dbo.spTeams_Insert(?)}");
-             CallableStatement myStmt_2 = connection.prepareCall("{call dbo.spTeamMembers_Insert(?,?)}");
         ){
+            String sql = "insert into dbo.Teams(TeamName) values (?);";
+            CallableStatement statement = connection.prepareCall(sql);
 
-            myStmt_1.setString(1, team.getTeamName());
-            myStmt_1.registerOutParameter(2, Types.INTEGER);
-            myStmt_1.execute();
+            String sql2 = "insert into dbo.TeamMembers(TeamId, PersonId) values (?,?)";
+            CallableStatement statement2 = connection.prepareCall(sql2);
+
+//            CallableStatement myStmt_1 = connection.prepareCall("{call dbo.spTeams_Insert(?)}");
+//            CallableStatement myStmt_2 = connection.prepareCall("{call dbo.spTeamMembers_Insert(?,?)}");
+
+            statement.setString(1, team.getTeamName());
+            statement.execute();
+//            statement.registerOutParameter(2, Types.INTEGER);
+
 
             // get the value of the OUT parameter
+//            int teamId = myStmt_1.getInt(2); // put here the output id of myStmt_1
 
-            int teamId = myStmt_1.getInt(2); // put here the output id of myStmt_1
 //            select player where email == player with same email
 
             for (String memberName : team.getTeamMembers())
             {
-                myStmt_2.setInt(1, teamId);
-//                myStmt_2.setInt(2, person.getId());
-                myStmt_2.execute();
+//                myStmt_2.setInt(1, teamId);
+////                myStmt_2.setInt(2, person.getId());
+//                myStmt_2.execute();
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+//    public static void createTeam(CreateTeamRequest team)
+//    {
+//        try (Connection connection = DriverManager.getConnection(connectionUrl);
+//             CallableStatement myStmt_1 = connection.prepareCall("{call dbo.spTeams_Insert(?)}");
+//             CallableStatement myStmt_2 = connection.prepareCall("{call dbo.spTeamMembers_Insert(?,?)}");
+//        ){
+//
+//            myStmt_1.setString(1, team.getTeamName());
+//            myStmt_1.registerOutParameter(2, Types.INTEGER);
+//            myStmt_1.execute();
+//
+//            // get the value of the OUT parameter
+//
+//            int teamId = myStmt_1.getInt(2); // put here the output id of myStmt_1
+////            select player where email == player with same email
+//
+//            for (String memberName : team.getTeamMembers())
+//            {
+//                myStmt_2.setInt(1, teamId);
+////                myStmt_2.setInt(2, person.getId());
+//                myStmt_2.execute();
+//            }
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     public static void createTournament(TournamentModel model)
     {
@@ -237,42 +280,40 @@ public class SQLConnector implements IDataConnection {
         }
     }
 
-    public static List<PersonModel> getPerson_All()  {
-        String ss = System.getenv("CATALINA_HOME");
-        System.out.println(ss);
-//        try{
-////            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//        }catch (Exception e){
-//            System.out.println(e.toString());
-//        }
+    public static List<PersonModel> getPerson_All()
+    {
         List<PersonModel> output = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(connectionUrl);
+             Statement statement = connection.createStatement();
         ){
-            CallableStatement myStmt = connection.prepareCall("{call dbo.spPeople_GetAll}");
-            myStmt.execute();
-            ResultSet result = myStmt.getResultSet();
+            ResultSet resultSet = statement.executeQuery("select * from people");
 
-            while (result.next())
+            while (resultSet.next())
             {
                 PersonModel person = new PersonModel();
-                person.setFirstName(result.getString("FirstName"));
-                person.setLastName(result.getString("LastName"));
-                person.setEmailAddress(result.getString("EmailAddress"));
-                person.setCellphoneNumber(result.getString("CellphoneNumber"));
+                person.setFirstName(resultSet.getString("FirstName"));
+                person.setLastName(resultSet.getString("LastName"));
+                person.setEmailAddress(resultSet.getString("EmailAddress"));
+                person.setCellphoneNumber(resultSet.getString("CellphoneNumber"));
 
                 output.add(person);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return output;
     }
 
-    public static List<TeamModel> getTeam_All()
+    public static List<String> getPrizes_All()
     {
-        List<TeamModel> output = new ArrayList<>();
+        List<String> prizes = new ArrayList<>();
+
+        return prizes;
+    }
+    public static List<String> getTeam_All()
+    {
+        List<String> output = new ArrayList<>();
 
         try (Connection connection = DriverManager.getConnection(connectionUrl);
         ) {
@@ -282,16 +323,21 @@ public class SQLConnector implements IDataConnection {
 
             while (result.next())
             {
-                TeamModel team = new TeamModel();
-                team.setTeamName(result.getString("TeamName"));
-
-                output.add(team);
+//                TeamModel team = new TeamModel();
+//                team.setTeamName(result.getString("TeamName"));
+//
+//                output.add(team);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
         return output;
+    }
+
+    public static void getPrizesByTournament()
+    {
+
     }
 
     // TODO

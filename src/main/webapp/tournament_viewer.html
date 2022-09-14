@@ -13,15 +13,15 @@
     <form id="tournamentViewerForm" name="tournamentViewerForm">
         <div class="division under">
             <label style="padding: 20px;">Tournament: </label><label id="tournamentName" name="tournamentName"></label>
-            <label style="padding: 10px;  top:2px;">Round</label>
-            <select id="round" style="width: 220px;"></select>
+            <label style="padding: 10px;  top:2px;">Round</label><label id="roundNumber" name="roundNumber"></label>
             <div style="display: block; padding: 0px 4px 0px 6px;">
-                <input style="float: left" type="checkbox" id="unplayedOnly" name="unplayedOnly" size="">
                 <label >Unplayed Only</label><br>
+                <select id="unplayedMatchupList" style="width: 220px; font-size: medium;" size="10"></select>
+                <input id="getNextRound" name="getNextRound" class="create_buttons" style="font-weight: bold;" type="button" value="Get Next Round" onclick="getNextRoundClicked()">
+                <label>Played Games</label>
+                <select id="round" style="width: 220px; margin: 5px"></select>
+                <select id="playedMatchupList" style="width: 220px; margin-top: 0px; font-size: medium;" size="10"></select>
             </div>
-
-            <select id="matchupList" style="width: 220px; font-size: medium;" size="10">
-            </select>
         </div>
         <div class="division">
             <label id="teamOneName">Not yet set</label><br>
@@ -34,10 +34,8 @@
         </div>
         <div class="division">
             <label id="winner" style="position: absolute; padding-left: 100px; top:5%; font-weight: bold;"></label>
-            <input class="create_buttons" style="margin: 40%; font-weight: bold;" type="button" value="Score" onclick="scoreButtonClicked()">             
-            
+            <input class="create_buttons" style="margin: 40%; font-weight: bold;" type="button" value="Score" onclick="scoreButtonClicked()">
         </div>
-       
     </form>
 </body>
 <script type="text/javascript" src="tournament_dashboard.js"></script>

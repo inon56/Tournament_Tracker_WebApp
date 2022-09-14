@@ -1,11 +1,23 @@
 
+window.onload = function ()
+{
+    fetch("personServlet", {
+        method: 'POST',
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({"create player": "d"})
+    })
+        .then(res => {return res.json()})
+        .catch((error) => {
+            alert(error); // 'There has been a problem with your fetch operation craete player:'
+        })
+}
+
 function createPlayerClicked()
 {
     let firstName =  document.getElementById("firstName").value;
     let lastName =  document.getElementById("lastName").value;
     let email = document.getElementById("email").value;
     let cellphone = document.getElementById("cellphone").value;
-
 
     if (validateCreatePlayer(firstName, lastName, email, cellphone))
     {
@@ -15,11 +27,11 @@ function createPlayerClicked()
             "emailAddress" : email,
             "cellphoneNumber" : cellphone
         };
-
+    
         if (!checkPlayerExist(player))
         {
             postPlayer(player);
-            window.alert("ok");
+    
             clearPlayerFields();
         }
     }
@@ -44,30 +56,32 @@ function validateCreatePlayer(firstName, lastName, email, cellphone)
 {
     let stringRegex = /^[a-zA-Z]+$/;
 
-    if (stringRegex.test(firstName))
+    if (!stringRegex.test(firstName))
     {
         alert("Invalid firstName, letters only");
         return false;
     }
 
-    if (stringRegex.test(lastName))
+    if (!stringRegex.test(lastName))
     {
         alert("Invalid lastName, letters only");
         return false;
     }
 
     // validate email
-    if ((/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)))
+    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)))
     {
         alert("Invalid Email address");
         return false;
     }
 
-    if (!isNaN(cellphone))
+    if (isNaN(cellphone))
     {
         alert("Invalid cellphone, numbers only");
         return false;
     }
+
+    return true;
 }
 
 function clearPlayerFields()

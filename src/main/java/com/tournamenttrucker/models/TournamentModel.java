@@ -9,7 +9,6 @@ public class TournamentModel {
     private transient int id;
     private String tournamentName;
     private double entryFee; // decimal
-
     private List<TeamModel> enteredTeams;
 
 //    @Expose(serialize = true, deserialize = false)
@@ -51,6 +50,21 @@ public class TournamentModel {
         return enteredTeams;
     }
 
+    public void setEntryFee(double entryFee) {
+        this.entryFee = entryFee;
+    }
+
+    public void setEnteredTeams(List<TeamModel> enteredTeams) {
+        this.enteredTeams = enteredTeams;
+    }
+
+    public void setPrizes(List<PrizeModel> prizes) {
+        this.prizes = prizes;
+    }
+
+    public void setRounds(List<List<MatchupModel>> rounds) {
+        this.rounds = rounds;
+    }
 
     public List<PrizeModel> getPrizes() {
         return prizes;
