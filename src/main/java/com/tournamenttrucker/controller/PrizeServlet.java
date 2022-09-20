@@ -16,24 +16,8 @@ import java.io.PrintWriter;
 
 @WebServlet(value = "/prizeServlet")
 public class PrizeServlet extends HttpServlet {
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
-    {
-
-        Gson gson = new Gson();
-        PrizeModel p1 = new PrizeModel(1,"aaa",10 , 5);
-        PrizeModel p2 = new PrizeModel(2,"second",20,3);
-        String jsonString = gson.toJson(p1);
-        System.out.println(jsonString);
-
-        PrintWriter out = res.getWriter();
-        res.setContentType("application/json");
-        out.write(jsonString);
-        out.close();
-    }
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("prize post");
-
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
@@ -45,14 +29,11 @@ public class PrizeServlet extends HttpServlet {
         Gson gson = new Gson();
         CreatePrizeRequest prize = gson.fromJson(sb.toString(), CreatePrizeRequest.class);
 
-//        SQLConnector.createPrize(prize);
-    }
+        SQLConnector.createPrize(prize);
 
-
-
-
-    public void destroy()
-    {
-        System.out.println("servlet is destroyed now");
+        PrintWriter out = res.getWriter();
+        res.setContentType("application/text;charset=utf-8");
+        out.print("player created");
+        out.close();
     }
 }

@@ -18,21 +18,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-@WebServlet("/tournamentServlet")
+@WebServlet(value = "/tournamentServlet")
 public class TournamentServlet extends HttpServlet {
-
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
     {
-        System.out.println("tournamentServlet get method called");
-
-        List<String> teams = SQLConnector.getTeam_All();
-        List<String> prizes = SQLConnector.getPrizes_All();
-        CreateTournamentResponse data = new CreateTournamentResponse(teams,prizes);
+        List<String> teams = SQLConnector.getTeamAll();
+        CreateTournamentResponse tournamentResponse = new CreateTournamentResponse(teams);
 
         Gson gson = new Gson();
-        String jsonString = gson.toJson(data.toString());
+        String jsonString = gson.toJson(tournamentResponse);
+
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/json;charset=utf-8");
@@ -40,8 +38,10 @@ public class TournamentServlet extends HttpServlet {
         out.close();
     }
 
-    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+    public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
+        System.out.println("tournament servlet get method");
+
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
@@ -52,10 +52,14 @@ public class TournamentServlet extends HttpServlet {
         reader.close();
 
         Gson gson = new Gson();
-        String jsonString = "{\"tournamentName\": NBA, \"entryFee\": 50, \"enteredTeams\": [lakers,dodgers,bools], \"enteredPrizes\": [first,second]}";
-        CreateTournamentRequest request = gson.fromJson(jsonString, CreateTournamentRequest.class);
+        String jsonString = "{\"tournamentName\": NBA, \"entryFee\": 50, \"enteredTeams\": [lakers,dodgers,bulls], \"enteredPrizes\": [first,second]}";
+        CreateTournamentRequest tournamentRequest = gson.fromJson(jsonString, CreateTournamentRequest.class);
 
-        // TODO:
+        System.out.println(tournamentRequest);
+
+        SQLConnector.createTournament(tournamentRequest);
+
+
         // 1 - get all teams id from DB with the same name as the enteredTeams
         // 2 - get all prizes id from DB with the same name as the enteredPrizes
         // 3 - call SQLConnector spPerson_GetByTournament
@@ -71,15 +75,21 @@ public class TournamentServlet extends HttpServlet {
         List<TeamModel> teams = new ArrayList<>();
 
         TournamentModel tournament = new TournamentModel();
-        tournament.setTournamentName(request.getTournamentName());
-        tournament.setEntryFee(request.getEntryFee());
+        tournament.setTournamentName(tournamentRequest.getTournamentName());
+        tournament.setEntryFee(tournamentRequest.getEntryFee());
 
         // TODO: convert the string to TeamModel and PrizeModel
-//        tournament.setEnteredTeams(request.getEnteredTeams());
-//        tournament.setPrizes((request.getPrizes()));
+//        tournament.setEnteredTeams(tournamentRequest.getEnteredTeams());
 
 
-        TournamentLogic.createRounds(tournament);
+//        TournamentLogic.createRounds(tournament);
 //        SQLConnector.createTournament(model);
+
+
+
+        PrintWriter out = res.getWriter();
+        res.setContentType("application/text;charset=utf-8");
+        out.print("Tournament created");
+        out.close();
     }
 }

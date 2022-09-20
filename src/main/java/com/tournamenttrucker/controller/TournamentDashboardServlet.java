@@ -2,26 +2,21 @@ package com.tournamenttrucker.controller;
 
 import com.google.gson.Gson;
 import com.tournamenttrucker.dataAccess.SQLConnector;
-import com.tournamenttrucker.models.TournamentModel;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet("/tournamentDashboardServlet")
-public class TournamentDashboardServlet {
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+@WebServlet(value="/tournamentDashboardServlet")
+public class TournamentDashboardServlet extends HttpServlet {
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("tournament dashboard servlet get method called");
+        List<String> tournaments = SQLConnector.getTournamentAll();
         Gson gson = new Gson();
-//        List<TournamentModel> tournaments =  SQLConnector.getTournament_All();
-//        String jsonString = gson.toJson(tournaments);
-
-        String jsonString = "sfsf";
-        System.out.println(jsonString);
+        String jsonString = gson.toJson(tournaments);
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/json");

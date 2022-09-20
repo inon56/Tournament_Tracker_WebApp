@@ -1,29 +1,42 @@
-let teamsList = ["dodgers", "lakers", "celtic"];
-let prizesList = ["first", "second"];
+let teamsList = [];
 let enteredTeams = [];
-let enteredPrizes = [];
+let prizesList = [];
+
+
+let data =
+    {
+        "teams": ["cool-team","super-team"],
+
+        "prizeOptions":
+            [
+                {"option": "1", "firstPlace": "100%"},
+                {"option": "2", "firstPlace": "80%", "secondPlace": "20%"},
+                {"option": "3", "firstPlace": "70%", "secondPlace": "30%"},
+                {"option": "4", "firstPlace": "60%", "secondPlace": "40%"},
+                {"option": "5", "firstPlace": "60%", "secondPlace": "30%", "thirdPlace": "10%"}
+            ]
+    }
+
 
 window.onload = () => {
+    // getTournament();
+    updateLists(data);
+    populatePrizeOptionsDropDownList();
     populateTeamsDropDownList();
-    populatePrizesDropDownList();
-    // getTournaments();
 }
 
-// GET tournaments
-function getTournaments()
+function getTournament()
 {
     fetch("tournamentServlet", {
         method: "GET",
-        headers: {'Accept': 'application/json'} // Explicitly asking for JSON
     })
-    .then(res => {return res.json()}) // res.json returns a promise 
-    .then((data) => {
-        updateLists(data);
-    })
-    .then(() => {
-        populateTeamDropDownList();
-        populatePrizesDropDownList();
-    })
+        .then(res => {return res.json()}) // res.json returns a promise
+        .then((data) => {updateLists(data);})
+        .then(() => {
+            populateTeamsDropDownList();
+            populatePrizesDropDownList();
+        })
+        .catch((error) => alert(error));
 }
 
 // json: { "teams": ["cool-team","super-team", ...], "prizes": ["first", "second", ...]  }
@@ -36,31 +49,42 @@ function updateLists(data)
     }
 
     // prizesList
-    for (const prize of data["prizes"])
+    for (const prizeOption of data["prizeOptions"])
     {
-        prizesList.push(prize);
+        prizesList.push(prizeOption)
     }
 }
 
 function populateTeamsDropDownList()
 {
-    for (let team of teamsList)
+    let teams = document.getElementById("teamsList");
+
+    for (const team of teamsList)
     {
-        let teams = document.getElementById("teamsList");
         let option = document.createElement("option");
         option.text = team;
         teams.add(option);
     }
 }
 
-function populatePrizesDropDownList()
+function populatePrizeOptionsDropDownList()
 {
-    for (let prize of prizesList)
+    let prizes = document.getElementById("prizeOptionsList");
+    let txt = "";
+    let concatTxt ="";
+
+    for (const prize of prizesList)
     {
-        let prizes = document.getElementById("prizesList");
         let option = document.createElement("option");
-        option.text = prize;
+
+        for (const [key, val] of Object.entries(prize))
+        {
+            txt = (`${key}: ${val} `);
+            concatTxt += txt;
+        }
+        option.text = concatTxt;
         prizes.add(option);
+        concatTxt ="";
     }
 }
 
@@ -78,11 +102,11 @@ function addTeamClicked()
 
     // update lists
     enteredTeams.push(teamText);
-     
+
     const index = teamsList.indexOf(teamValue);
-    if (index != -1)
+    if (index !== -1)
         teamsList.splice(index,1);
-    
+
 }
 
 function removeSelectedTeamClicked()
@@ -101,62 +125,18 @@ function removeSelectedTeamClicked()
     teamsList.push(teamText); // TODO maybe need to add value
 
     let index = enteredTeams.indexOf(teamValue) // TODO maybe need to add value
-    if (index != -1)
+    if (index !== -1)
         enteredTeams.splice(index,1);
 }
-
-function addPrizeClicked()
-{
-    let prizeSelected = document.getElementById("prizesList");
-    let prizeValue = prizeSelected.value;
-    let prizeText = prizeSelected.options[prizeSelected.selectedIndex].text;
-    prizeSelected.remove(prizeSelected.selectedIndex);
-
-    let prizesInTournametSelected = document.getElementById("prizesInTournamentList");
-    let option = document.createElement("option");
-    option.text = prizeText;
-    prizesInTournametSelected.add(option);
-
-    // update lists
-    enteredPrizes.push(prizeText);
-    
-    let index = prizesList.indexOf(prizeValue)
-    if (index != -1)
-        prizesList.splice(index,1);
-}
-
-function removeSelectedPrizeClicked()
-{
-    let prizesInTournamentSelected = document.getElementById("prizesInTournamentList");
-    let prizeValue = prizesInTournamentSelected.value;
-    let prizeText = prizesInTournamentSelected.options[prizesInTournamentSelected.selectedIndex].text;
-    prizesInTournamentSelected.remove(prizesInTournamentSelected.selectedIndex);
-
-    let prizeSelected = document.getElementById("prizesList");
-    let option = document.createElement("option");
-    option.text = prizeText;
-    prizeSelected.add(option);
-
-    // update lists
-    prizesList.push(prizeText); 
-
-    let index = enteredPrizes.indexOf(prizeValue)
-    if (index !== -1)
-        enteredPrizes.splice(index,1);
-}
-
 
 function createTournamentClicked()
 {
     let tournamentName = document.getElementById("tournamentName").value;
     let entryFee = document.getElementById("entryFee").value;
-
-    validateCreateTournament(tournamentName, entryFee);
-
-    postTournament(tournamentName, entryFee);
-    // window.close();
-
-    // clearFields(); // no need clear if close the window
+    if (validateCreateTournament(tournamentName, entryFee))
+    {
+        postTournament(tournamentName, entryFee);
+    }
 }
 
 function validateCreateTournament(tournamentName, entryFee)
@@ -172,41 +152,28 @@ function validateCreateTournament(tournamentName, entryFee)
     {
         alert("Invalid entry fee, numbers only");
         return false;
-    }   
+    }
+
+    return true;
 }
 
 function postTournament(tournamentName, entryFee)
 {
-    // TODO: maybe delete this
-    // let teamsListSelected = [];
-    // for (let i = 0; i < teamsList.options.length; i++)
-    // {
-    //     teamsListSelected.push(teamsListSelected.options[i].text);
-    // }
-    //
-    // let prizesList = document.getElementById("prizesList");
-    // let prizesListSelected = [];
-    // for (let i = 0; i < prizesList.options.length; i++)
-    // {
-    //     prizesListSelected.push(prizesListSelected.options[i].text);
-    // }
+    const tournament = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams};
 
-    const data = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams, "enteredPrizes": enteredPrizes};
-
-	fetch("tournamentServlet", {
-	    method: 'POST',
-	    headers: { "content-type": "application/json" }, // Explicitly posting JSON
-	    body: JSON.stringify(data) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
-	})
-	.then(res => {return res.json()})
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
+    fetch("tournamentServlet", {
+        method: 'POST',
+        headers: { "content-type": "application/json" }, // Explicitly posting JSON
+        body: JSON.stringify(tournament) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
     })
-    .then(alert("success"))
+        .then(res => {return res.text()})
+        .then((text) => alert(text + ", click to close the window"))
+        .then(window.close)
+        .catch(() => alert((error) => alert(error)))
 }
 
-function clearFields()
-{
-    document.getElementById("tournamentName").value = "";
-    document.getElementById("entryFee").value = "0";
-}
+// function clearFields()
+// {
+//     document.getElementById("tournamentName").value = "";
+//     document.getElementById("entryFee").value = "0";
+// }

@@ -1,14 +1,8 @@
-let availablePlayersList =
-    [
-        {"firstName":"dan", "lastName": "joy", "emailAddress": "dan@gmail.com"},
-        {"firstName": "rock", "lastName": "dell", "emailAddress": "rock@gmail.com"},
-        {"firstName": "mike", "lastName": "sylvester", "emailAddress": "mike@gmail.com"}
-    ];
+let availablePlayersList = [];
 let teamPlayersList = [];
 
 window.onload = () => {
-    populatePlayersDropDown();
-    // getPlayers();
+    getPlayers();
 }
 
 function getPlayers()
@@ -18,22 +12,21 @@ function getPlayers()
     })
     .then(res => {return res.json()})
     .then((data) => {
-        // updatePlayersLists(data);
+        updatePlayersLists(data);
     })
-    // .then(() => {
-    //     populatePlayersDropDown()
-    // })
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
+    .then(() => {
+        populatePlayersDropDown()
     })
+    .catch((error) => alert(error))
 }
 
-// args: {  "players": [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ], "teamPlayers [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ] }
+// args: {  "players": [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ], "teamPlayers": [ {"firstName": val, "lastName": val, "email": val, "cellphone": val}, ... ] }
 // adding the players to the availablePlayersList
-function updatePlayersLists(data)
+function updatePlayersLists(players)
 {
-    let players = JSON.parse(data);
-    availablePlayersList = players['players'];
+    // let players = JSON.parse(data);
+    // availablePlayersList = ['players'];
+    availablePlayersList = players;
 }
 
 function populatePlayersDropDown()
@@ -115,8 +108,8 @@ function createTeamClicked()
 {
     let teamName = document.getElementById("teamName").value;
 
-    // if (!validateCreateTeam(teamName))
-    // {
+    if (validateCreateTeam(teamName))
+    {
         let emails = [];
         for (const player of teamPlayersList)
         {
@@ -128,14 +121,14 @@ function createTeamClicked()
 
         // clear teamName field
         document.getElementById("teamName").value = "";
-    // }
+    }
 }
 
 function validateCreateTeam(teamName)
 {
     let stringRegex = /^[a-zA-Z]+$/;
 
-    if (teamName.length == 0)
+    if (teamName.length === 0)
     {
         alert("Missing team name")
         return false;
@@ -148,19 +141,17 @@ function validateCreateTeam(teamName)
     return true;
 }
 
-
 // { "teamName": "name", "teamMembersEmails": ["email_1", "email_2", "email_3"] }
 function postTeam(team)
 {
 	fetch("teamServlet", {
 	    method: 'POST',
 	    headers: { "content-type": "application/json" },
-	    body: JSON.stringify(team) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
+	    body: JSON.stringify(team)
 	})
-	.then(res => {return res.json()})
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
-    })
+	.then(res => {return res.text()})
+    .then((text) => alert(text))
+    .catch((error) => alert(error))
 }
 
 

@@ -8,7 +8,7 @@ public class CreateTournamentRequest {
     private String tournamentName;
     private int entryFee;
     private List<String> enteredTeams;
-    private List<String> prizes;
+    private List<String> enteredPrizes;
 
     public String getTournamentName() {
         return tournamentName;
@@ -22,8 +22,18 @@ public class CreateTournamentRequest {
         return enteredTeams;
     }
 
-    public List<String> getPrizes() {
-        return prizes;
+    public List<String> getEnteredPrizes() {
+        return enteredPrizes;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateTournamentRequest{" +
+                "tournamentName='" + tournamentName + '\'' +
+                ", entryFee=" + entryFee +
+                ", enteredTeams=" + enteredTeams +
+                ", prizes=" + enteredPrizes +
+                '}';
     }
 }
 

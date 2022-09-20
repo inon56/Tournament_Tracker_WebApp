@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TeamModel {
-    private transient int id;
+    private int id;
     private String teamName;
     private List<PersonModel> teamMembers;
     public TeamModel() {

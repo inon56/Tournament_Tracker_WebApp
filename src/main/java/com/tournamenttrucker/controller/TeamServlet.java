@@ -2,6 +2,7 @@ package com.tournamenttrucker.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.tournamenttrucker.contracts.CreatePersonResponse;
 import com.tournamenttrucker.contracts.CreateTeamRequest;
 import com.tournamenttrucker.dataAccess.SQLConnector;
 import com.tournamenttrucker.models.PersonModel;
@@ -13,25 +14,20 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet(value = "/teamServlet")
 public class TeamServlet extends HttpServlet {
-
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("team servlet get");
-        List<PersonModel> playersList = SQLConnector.getPerson_All();
-        Gson gson = new GsonBuilder().create();
+        List<CreatePersonResponse> playersList = SQLConnector.getPersonAll();
+        Gson gson = new Gson();
         String jsonString = gson.toJson(playersList);
 
-        System.out.println(jsonString);
-
-//        PrintWriter out = res.getWriter();
-//        res.setContentType("application/json");
-//        out.write(jsonString);
-//        out.close();
+        PrintWriter out = res.getWriter();
+        res.setContentType("application/json");
+        out.write(jsonString);
+        out.close();
     }
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
@@ -47,9 +43,12 @@ public class TeamServlet extends HttpServlet {
 
         Gson gson = new Gson();
         CreateTeamRequest team = gson.fromJson(sb.toString(), CreateTeamRequest.class);
+//        System.out.println(team);
+        SQLConnector.createTeam(team);
 
-        System.out.println("the team:" + team);
-//        SQLConnector.createTeam(team);
-
+        PrintWriter out = res.getWriter();
+        res.setContentType("application/text;charset=utf-8");
+        out.print("Team created");
+        out.close();
     }
 }

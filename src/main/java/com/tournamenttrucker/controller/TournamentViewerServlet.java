@@ -10,6 +10,7 @@ import com.tournamenttrucker.models.MatchupModel;
 import com.tournamenttrucker.models.TournamentModel;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -17,10 +18,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-@WebServlet("/tournamentViewerServlet")
-public class TournamentViewerServlet {
+@WebServlet(value = "/tournamentViewerServlet")
+public class TournamentViewerServlet extends HttpServlet {
     private TournamentModel tournamentModel;
-
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
         System.out.println("tournament viewer servlet get method called");
 
@@ -40,13 +40,12 @@ public class TournamentViewerServlet {
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
-
         while ((line = reader.readLine()) != null) {
             sb.append(line);
         }
         reader.close();
 
-        // "tournamentName": tournamentName, "game": }
+
         Gson gson = new Gson();
         String jsonString = "{\"tournamentName\": NBA, \"game\": {\"teamOne\": \"aaa\", \"teamTwo\": \"bbb\", \"teamOneScore\": 2, \"teamTwoScore\": 5";
         CreateRoundGameRequest game = gson.fromJson(jsonString, CreateRoundGameRequest.class);

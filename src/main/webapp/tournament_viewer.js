@@ -9,12 +9,12 @@ let round =
         "games":
             [
                 {
-                    "teamOne": "jhon",
-                    "teamTwo": "dan"
+                    "teamOne": "john",
+                    "teamTwo": "dan",
                 },
                 {
                     "teamOne": "sony",
-                    "teamTwo": "exbox"
+                    "teamTwo": "xbox",
                 }
             ]
     };
@@ -71,15 +71,13 @@ function getRound()
     .then(() => {
         populateTeamDropDownList()
     })
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
-    })
+    .catch((error) => alert(error))
 }
 
 // json: { "number": 1,"games": [{"team1": "cool-team", "team2": "super-team"}, {..}, {...}]
 function updateRoundList(data)
 {
-    round = JSON.parse(data);
+    // round = JSON.parse(data);
     document.getElementById("roundNumber").innerHTML = round['number'];
 }
 
@@ -170,9 +168,8 @@ function postGame(teamOneScore, teamTwoScore)
         headers: { "content-type": "application/json" },
         body: JSON.stringify(data)
     })
-        .then(res => {return res.json()})
-        .catch(() => {
-            alert('There has been a problem with your fetch operation:');
-        })
+    // .then(res => {return res.json()})
+    // .then((text) => alert(text))
+    .catch((error) => alert(error))
 }
 

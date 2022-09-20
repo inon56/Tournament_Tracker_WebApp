@@ -7,8 +7,12 @@ import java.util.Collections;
 import java.util.List;
 
 public class TournamentLogic {
-
-    // A quarterback method
+//    public static void prizeDistribution(int numEntries)
+//    {
+//        PrizeDistributionModel prize = new PrizeDistributionModel();
+//        prize.setNumEntries(numEntries);
+//
+//    }
     public static void createRounds(TournamentModel model)
     {
         List<TeamModel> randomizedTeams = new ArrayList<>(model.getEnteredTeams());
@@ -161,11 +165,13 @@ public class TournamentLogic {
     {
         double output = 0;
 
-        if (prize.getPrizeAmount() > 0)
-            output = prize.getPrizeAmount();
 
-        else
-            output = totalIncome * (prize.getPrizePercentage() / 100);
+
+//        if (prize.getPrizeAmount() > 0)
+//            output = prize.getPrizeAmount();
+//
+//        else
+//            output = totalIncome * (prize.getPrizePercentage() / 100);
 
         return output;
     }

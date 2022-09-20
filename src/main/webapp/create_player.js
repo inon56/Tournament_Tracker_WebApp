@@ -1,17 +1,4 @@
 
-window.onload = function ()
-{
-    fetch("personServlet", {
-        method: 'POST',
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({"create player": "d"})
-    })
-        .then(res => {return res.json()})
-        .catch((error) => {
-            alert(error); // 'There has been a problem with your fetch operation craete player:'
-        })
-}
-
 function createPlayerClicked()
 {
     let firstName =  document.getElementById("firstName").value;
@@ -27,29 +14,13 @@ function createPlayerClicked()
             "emailAddress" : email,
             "cellphoneNumber" : cellphone
         };
-    
-        if (!checkPlayerExist(player))
-        {
-            postPlayer(player);
-    
-            clearPlayerFields();
-        }
+
+        postPlayer(player);
+
+        clearPlayerFields();
     }
-
 }
 
-// TODO
-function checkPlayerExist(player)
-{
-    // for (let i = 0; i < availablePlayersArray; i++)
-    // {
-    //     if (availablePlayersArray[i] === player)
-    //     {
-    //         alert("Player already exist!");
-    //         return false;
-    //     }
-    // }
-}
 
 // change here the argument to player and all the rest inside
 function validateCreatePlayer(firstName, lastName, email, cellphone)
@@ -99,8 +70,7 @@ function postPlayer(data)
         headers: { 'content-type': 'application/json' }, // Explicitly posting JSON
         body: JSON.stringify(data) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
     })
-    .then(res => {return res.json()})
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
-    })
+    .then(res => {return res.text()})
+    .then((text) => alert(text))
+    .catch(() => {alert('There has been a problem with your fetch operation:')})
 }

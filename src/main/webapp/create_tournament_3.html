@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="#">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Tournament</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <form id="tournamentForm" name="tournamentForm" action="" method="post">
+        <h1 style="top: auto;">Create Tournament</h1>
+            <div class="division">
+                <label>Tournament</label>
+                <input type="text" id="tournamentName">
+                <label>Entry Fee</label><input type="text" id="entryFee" name="entryFee" placeholder="0">
+                <label>Select Team</label>
+                <a href="create_team.html" style="padding:20px;" target="_blank">Create New</a>
+                <select id="teamsList" name="teamsList" style="width: 220px;"></select>
+                <input class="create_buttons" type="button" id="addTeam" value="Add Team" onclick="addTeamClicked()">
+                <label>Select Prize</label>                
+                <select id="prizesList" name="prizes" style="width: 220px;"></select>    
+                <input class="create_buttons" type="button" id="addPrize" value="Add Prize" onclick="addPrizeClicked()">
+                <input class="create_buttons" type="button" value="Create Prize" onclick="window.open('create_prize.html')">
+            </div>                
+            <div class="division">
+                <label>Teams</label>
+                <select id="teamsInTournametList" name="teamsInTournametList" style="width:200px;" size="10" multiple></select>
+                <input class="create_buttons"  type="button" id="removeSelectedTeams" value="Remove Selected" onclick="removeSelectedTeamClicked()">                
+            </div>
+            <div class="division">
+                <label>Prizes</label>               
+                <select id="prizesInTournamentList" name="prizesInTournamentList" style="width:200px;" size="10" multiple></select>
+                <input class="create_buttons" type="button" id="removeSelectedPrizes" value="Remove Selected" onclick="removeSelectedPrizeClicked()">                   
+            </div>                    
+        </div>
+        
+        <div class="division">
+        <input class="create_buttons" type="button" id="createTournament" value="Create Tournament" onclick="createTournamentClicked()">
+        </div>
+    </form>
+</body>
+<script type="text/javascript" src="create_tournament.js"></script>
+</html>

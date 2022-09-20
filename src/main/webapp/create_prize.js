@@ -1,13 +1,3 @@
-// window.onload = () => {getPrize()}
-let prizesList =
-    [
-        {
-            "placeNumber": 3,
-            "placeName": "third",
-            "prizeValue": 120
-        }
-    ];
-
 
 function createPrizeClicked()
 {
@@ -17,7 +7,6 @@ function createPrizeClicked()
 
     if (validateCreatePrize(placeNumber, placeName, prizeValue))
     {
-        window.alert("ok");
         let prizeAmount = 0;
         let prizePercentage = 0;
         if (document.getElementById("prizeAmountRadio").checked)
@@ -33,22 +22,10 @@ function createPrizeClicked()
             "prizePercentage": prizePercentage
         };
 
-        // postPrize(prize);
+        postPrize(prize);
 
         clearFields();
     }
-}
-
-function getPrize()
-{
-    fetch("prizeServlet", {
-        method: 'GET'
-    })
-    .then(res => {return res.json()})
-    .then((data) => {console.log(data)})
-    .catch(() => {
-        alert('There has been a problem with your fetch operation');
-    })
 }
 
 function validateCreatePrize(placeNumber, placeName, prizeValue)
@@ -133,9 +110,9 @@ function postPrize(prize)
         headers: { 'content-type': 'application/json' }, // Explicitly posting JSON
         body: JSON.stringify(prize) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
     })
-    .then(res => {return res.json()})
-    .catch(() => {
-        alert('There has been a problem with your fetch operation:');
-    })
+    .then(res => {return res.text()})
+    .then((text) => alert(text))
+    .catch(() => {alert('There has been a problem with your fetch operation:');})
+
 }
 

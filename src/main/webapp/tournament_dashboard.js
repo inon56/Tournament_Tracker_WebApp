@@ -1,15 +1,7 @@
 
 window.onload = () => {
-    let dataSample = ["first", "second", "third"]
-    populateTournamentsDropDown(dataSample);
-    // getExistingTournaments();
+    getExistingTournaments();
 }
-
-// window.onload = () => {
-//     let dataSample = ["first", "second", "third"]
-//     // populateTournamentsDropDown(dataSample);
-//     getExistingTournaments();
-// }
 
 function loadTournamentClicked()
 {
@@ -20,7 +12,6 @@ function loadTournamentClicked()
     window.open('tournament_viewer.html')
 }
 
-// GET existing tournaments
 function getExistingTournaments()
 {
     fetch("tournamentDashboardServlet", {
@@ -28,11 +19,10 @@ function getExistingTournaments()
     })
     .then(res => {return res.json()})
     .then((data) => {
-        console.log(data);
-        // populateTournamentsDropDown(data);
+        populateTournamentsDropDown(data);
     })
     .catch(() => {
-        alert('There has been a problem with your fetch operation:');
+        alert('problem with getExistingTournaments:');
     })
 }
 

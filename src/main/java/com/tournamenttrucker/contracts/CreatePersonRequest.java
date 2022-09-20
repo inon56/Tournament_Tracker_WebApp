@@ -4,7 +4,6 @@ public class CreatePersonRequest {
     private String firstName;
     private String lastName;
     private String emailAddress;
-    //    @Expose(serialize = true, deserialize = false)
     private String cellphoneNumber;
 
     public CreatePersonRequest(String firstName, String lastName, String emailAddress, String cellphoneNumber) {

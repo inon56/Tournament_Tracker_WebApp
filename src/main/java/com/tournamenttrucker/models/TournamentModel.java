@@ -5,15 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TournamentModel {
-
-    private transient int id;
+    private int id;
     private String tournamentName;
-    private double entryFee; // decimal
+    private double entryFee;
     private List<TeamModel> enteredTeams;
-
-//    @Expose(serialize = true, deserialize = false)
     private List<PrizeModel> prizes;
-    private transient List<List<MatchupModel>> rounds;
+    private List<List<MatchupModel>> rounds;
 
     public TournamentModel() {
     }
