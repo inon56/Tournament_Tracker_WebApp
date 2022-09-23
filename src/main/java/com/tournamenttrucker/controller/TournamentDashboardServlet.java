@@ -14,9 +14,9 @@ import java.util.List;
 public class TournamentDashboardServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        List<String> tournaments = SQLConnector.getTournamentAll();
+        List<String> tournamentNames = SQLConnector.getAllActiveTournaments();
         Gson gson = new Gson();
-        String jsonString = gson.toJson(tournaments);
+        String jsonString = gson.toJson(tournamentNames);
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/json");

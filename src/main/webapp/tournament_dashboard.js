@@ -1,3 +1,4 @@
+// import {getRound} from "./tournament_viewer";
 
 window.onload = () => {
     getExistingTournaments();
@@ -10,6 +11,7 @@ function loadTournamentClicked()
     
     sessionStorage.setItem("tournamentName", tournamentName);
     window.open('tournament_viewer.html')
+    getRound();
 }
 
 function getExistingTournaments()

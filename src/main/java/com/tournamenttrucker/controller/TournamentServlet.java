@@ -1,12 +1,11 @@
 package com.tournamenttrucker.controller;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.tournamenttrucker.TournamentLogic;
-import com.tournamenttrucker.contracts.CreatePersonRequest;
 import com.tournamenttrucker.contracts.CreateTournamentRequest;
-import com.tournamenttrucker.contracts.CreateTournamentResponse;
+import com.tournamenttrucker.contracts.TournamentResponse;
 import com.tournamenttrucker.dataAccess.SQLConnector;
+import com.tournamenttrucker.models.PrizeGenerator;
 import com.tournamenttrucker.models.TeamModel;
 import com.tournamenttrucker.models.TournamentModel;
 import javax.servlet.ServletException;
@@ -18,19 +17,26 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @WebServlet(value = "/tournamentServlet")
 public class TournamentServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
     {
-        List<String> teams = SQLConnector.getTeamAll();
-        CreateTournamentResponse tournamentResponse = new CreateTournamentResponse(teams);
+        System.out.println("tournament servlet get called");
+
+        List<TeamModel> teams = SQLConnector.getAllAvailableTeams();
+        List<String> teamsNames = new ArrayList<>();
+        for (TeamModel team : teams) {
+            System.out.println(team.getTeamName());
+            teamsNames.add(team.getTeamName());
+        }
+
+
+        TournamentResponse tournamentResponse = new TournamentResponse(teamsNames);
 
         Gson gson = new Gson();
         String jsonString = gson.toJson(tournamentResponse);
-
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/json;charset=utf-8");
@@ -47,45 +53,33 @@ public class TournamentServlet extends HttpServlet {
         String line;
         while ((line = reader.readLine()) != null) {
             sb.append(line);
-            System.out.println(sb);
         }
         reader.close();
 
+//        sample: String jsonString = "{\"tournamentName\": NBA, \"entryFee\": 50, \"enteredTeams\": [lakers,dodgers,bulls,PSZ], \"prizeOption\": 1}";
         Gson gson = new Gson();
-        String jsonString = "{\"tournamentName\": NBA, \"entryFee\": 50, \"enteredTeams\": [lakers,dodgers,bulls], \"enteredPrizes\": [first,second]}";
-        CreateTournamentRequest tournamentRequest = gson.fromJson(jsonString, CreateTournamentRequest.class);
+        CreateTournamentRequest tournamentRequest = gson.fromJson(sb.toString(), CreateTournamentRequest.class);
 
-        System.out.println(tournamentRequest);
-
-        SQLConnector.createTournament(tournamentRequest);
-
-
-        // 1 - get all teams id from DB with the same name as the enteredTeams
-        // 2 - get all prizes id from DB with the same name as the enteredPrizes
-        // 3 - call SQLConnector spPerson_GetByTournament
-        // ? - call and assigned to  SQLConnector spPrizes_GetByTournament
-        // ? - call and assigned to  SQLConnector spPerson_GetByTournament
-        // 5 - tournament entries insert
-        // 6 - tournament prizes insert
-
-
-//        List<TeamModel> teams = new List<TeamModel>() {
-//            // select prizes with
-//        }
-        List<TeamModel> teams = new ArrayList<>();
+        try{
+            PrizeGenerator.getByOption(tournamentRequest.getPrizeOption());
+        } catch (Exception e){
+            res.sendError(400, "Wrong option number");
+        }
 
         TournamentModel tournament = new TournamentModel();
         tournament.setTournamentName(tournamentRequest.getTournamentName());
         tournament.setEntryFee(tournamentRequest.getEntryFee());
+        tournament.setPrizeOption(tournamentRequest.getPrizeOption());
 
-        // TODO: convert the string to TeamModel and PrizeModel
-//        tournament.setEnteredTeams(tournamentRequest.getEnteredTeams());
+        List<TeamModel> teamsEntered = new ArrayList<>();
+        for (String teamName : tournamentRequest.getEnteredTeams())
+        {
+            teamsEntered.add(new TeamModel(teamName));
+        }
 
-
-//        TournamentLogic.createRounds(tournament);
-//        SQLConnector.createTournament(model);
-
-
+        SQLConnector.createTournament(tournament, teamsEntered); // called only once
+        TournamentLogic.findNumberOfRounds(teamsEntered.size()); // TODO: adjust this
+        TournamentLogic.createNextRound(tournament.getId());
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/text;charset=utf-8");

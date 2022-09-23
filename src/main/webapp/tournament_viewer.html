@@ -17,7 +17,6 @@
             <div style="display: block; padding: 0px 4px 0px 6px;">
                 <label >Unplayed Games</label><br>
                 <select id="unplayedMatchupList" style="width: 220px; font-size: medium;" size="10"></select>
-                <input id="getNextRound" name="getNextRound" class="create_buttons" style="font-weight: bold;" type="button" value="Get Next Round" onclick="getNextRoundClicked()">
                 <label>Played Games</label>
                 <select id="round" style="width: 220px; margin: 5px"></select>
                 <select id="playedMatchupList" style="width: 220px; margin-top: 0px; font-size: medium;" size="10"></select>
@@ -30,7 +29,9 @@
             <label style="padding: 10%;">-VS-</label><br>
             <label id="teamTwoName">Not yet set</label><br>
             <label>Score</label>
-            <input type="text" id="teamTwoScore" name="teamTwoScore">    
+            <input type="text" id="teamTwoScore" name="teamTwoScore">
+            <input id="sendRound" name="sendRound" class="create_buttons" style="font-weight: bold;" type="button" value="Send Round" onclick="sendRoundClicked()">
+            <input id="getNextRound" name="getNextRound" class="create_buttons" style="font-weight: bold;" type="button" value="Get Next Round" onclick="getNextRoundClicked()">
         </div>
         <div class="division">
             <label id="winner" style="position: absolute; padding-left: 100px; top:5%; font-weight: bold;"></label>

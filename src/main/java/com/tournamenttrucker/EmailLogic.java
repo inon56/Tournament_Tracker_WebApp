@@ -9,10 +9,13 @@ import java.util.List;
 import java.util.Properties;
 
 public class EmailLogic {
-    public static void sendEmail(String player, String subject, String body)
+
+    // need teamId - teamName, placeNumber, double prizeAmount
+    public static void teamSpecificEmail(List<Integer> WinningTeams, int placeNumber, double prizeAmount)
     {
-        sendEmail(new ArrayList<>(Arrays.asList(player)), subject, body);
+
     }
+
     public static void sendEmail(List<String> players, String subject, String body)
     {
         final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
@@ -52,8 +55,8 @@ public class EmailLogic {
             // Set From: header field of the header.
             message.setFrom(new InternetAddress(from));
 
-            message.setSubject("This is the Subject Line!" + subject);
-            message.setText("This is actual message");
+            message.setSubject(subject);
+            message.setText(body);
 
             // Send message
             Transport.send(message);

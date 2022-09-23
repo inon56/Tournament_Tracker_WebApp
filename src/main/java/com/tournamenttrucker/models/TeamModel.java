@@ -6,13 +6,21 @@ import java.util.List;
 public class TeamModel {
     private int id;
     private String teamName;
-    private List<PersonModel> teamMembers;
+
+
     public TeamModel() {
     }
-
-    public TeamModel(String teamName, List<PersonModel> teamMembers) {
+    public TeamModel(int id, String teamName) {
+        this.id = id;
         this.teamName = teamName;
-        this.teamMembers =  new ArrayList<>(teamMembers);
+    }
+
+    public TeamModel(int id) {
+        this.id = id;
+    }
+
+    public TeamModel(String teamName) {
+        this.teamName = teamName;
     }
 
     public int getId() {
@@ -31,15 +39,12 @@ public class TeamModel {
         return teamName;
     }
 
-    public List<PersonModel> getTeamMembers() {
-        return teamMembers;
-    }
+
 
     @Override
     public String toString() {
         return "TeamModel{" +
                 "teamName='" + teamName + '\'' +
-                ", teamMembers=" + teamMembers +
                 '}';
     }
 }

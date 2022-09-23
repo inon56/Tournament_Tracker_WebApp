@@ -2,27 +2,8 @@ let teamsList = [];
 let enteredTeams = [];
 let prizesList = [];
 
-
-let data =
-    {
-        "teams": ["cool-team","super-team"],
-
-        "prizeOptions":
-            [
-                {"option": "1", "firstPlace": "100%"},
-                {"option": "2", "firstPlace": "80%", "secondPlace": "20%"},
-                {"option": "3", "firstPlace": "70%", "secondPlace": "30%"},
-                {"option": "4", "firstPlace": "60%", "secondPlace": "40%"},
-                {"option": "5", "firstPlace": "60%", "secondPlace": "30%", "thirdPlace": "10%"}
-            ]
-    }
-
-
 window.onload = () => {
-    // getTournament();
-    updateLists(data);
-    populatePrizeOptionsDropDownList();
-    populateTeamsDropDownList();
+    getTournament();
 }
 
 function getTournament()
@@ -31,27 +12,29 @@ function getTournament()
         method: "GET",
     })
         .then(res => {return res.json()}) // res.json returns a promise
-        .then((data) => {updateLists(data);})
+        .then((data) => {
+            updateLists(data);})
         .then(() => {
             populateTeamsDropDownList();
-            populatePrizesDropDownList();
+            populatePrizeOptionsDropDownList();
         })
         .catch((error) => alert(error));
 }
 
-// json: { "teams": ["cool-team","super-team", ...], "prizes": ["first", "second", ...]  }
+
 function updateLists(data)
 {
     // teamsList
-    for (const team of data["teams"])
+    for (const team of data["teamsNames"])
     {
         teamsList.push(team);
     }
 
     // prizesList
-    for (const prizeOption of data["prizeOptions"])
+    const count = Object.keys(data["prizeOptions"]).length;
+    for (let i = 1; i <= count; i++)
     {
-        prizesList.push(prizeOption)
+        prizesList.push(data["prizeOptions"][i]);
     }
 }
 
@@ -133,9 +116,12 @@ function createTournamentClicked()
 {
     let tournamentName = document.getElementById("tournamentName").value;
     let entryFee = document.getElementById("entryFee").value;
-    if (validateCreateTournament(tournamentName, entryFee))
+    let txt = document.getElementById("prizeOptionsList").value.split(" "); // string
+    let prizeOption = txt[1];
+
+    if (validateCreateTournament(tournamentName, entryFee, prizeOption))
     {
-        postTournament(tournamentName, entryFee);
+        postTournament(tournamentName, entryFee, prizeOption);
     }
 }
 
@@ -145,21 +131,26 @@ function validateCreateTournament(tournamentName, entryFee)
 
     if (!stringRegex.test(tournamentName))
     {
-        alert("Invalid team name, letters only")
+        alert("Invalid team name, letters only!");
         return false;
     }
     if (isNaN(entryFee))
     {
-        alert("Invalid entry fee, numbers only");
+        alert("Invalid entry fee, numbers only!");
+        return false;
+    }
+    if (enteredTeams % 2 !== 0)
+    {
+        alert("the number of entered teams is not even!")
         return false;
     }
 
     return true;
 }
 
-function postTournament(tournamentName, entryFee)
+function postTournament(tournamentName, entryFee, prizeOption)
 {
-    const tournament = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams};
+    const tournament = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams, "prizeOption": prizeOption};
 
     fetch("tournamentServlet", {
         method: 'POST',
@@ -171,9 +162,3 @@ function postTournament(tournamentName, entryFee)
         .then(window.close)
         .catch(() => alert((error) => alert(error)))
 }
-
-// function clearFields()
-// {
-//     document.getElementById("tournamentName").value = "";
-//     document.getElementById("entryFee").value = "0";
-// }

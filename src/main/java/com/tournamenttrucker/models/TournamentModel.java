@@ -8,18 +8,42 @@ public class TournamentModel {
     private int id;
     private String tournamentName;
     private double entryFee;
-    private List<TeamModel> enteredTeams;
-    private List<PrizeModel> prizes;
-    private List<List<MatchupModel>> rounds;
+    private int active;
+    private int currentRound;
+    private int prizeOption;
+    private PrizePercentageDistribution prizePercentageDistribution;
 
     public TournamentModel() {
     }
 
-    public TournamentModel(String tournamentName, double entryFee, List<TeamModel> enteredTeams, List<PrizeModel> prizes) {
+    public TournamentModel(int id, String tournamentName, double entryFee, int active, int currentRound, int prizeOption, PrizePercentageDistribution prizePercentageDistribution) {
+        this.id = id;
         this.tournamentName = tournamentName;
         this.entryFee = entryFee;
-        this.enteredTeams = enteredTeams;
-        this.prizes = prizes;
+        this.active = active;
+        this.currentRound = currentRound;
+        this.prizeOption = prizeOption;
+        this.prizePercentageDistribution = prizePercentageDistribution;
+    }
+
+    public int getPrizeOption() {
+        return prizeOption;
+    }
+
+    public void setPrizeOption(int prizeOption) {
+        this.prizeOption = prizeOption;
+    }
+
+    public int getActive() {
+        return active;
+    }
+
+    public int getCurrentRound() {
+        return currentRound;
+    }
+
+    public PrizePercentageDistribution getPrizePercentageDistribution() {
+        return prizePercentageDistribution;
     }
 
     public int getId() {
@@ -43,34 +67,24 @@ public class TournamentModel {
     }
 
 
-    public List<TeamModel> getEnteredTeams() {
-        return enteredTeams;
+    public void setActive(int active) {
+        this.active = active;
+    }
+
+    public void setCurrentRound(int currentRound) {
+        this.currentRound = currentRound;
+    }
+
+    public void setPrizePercentageDistribution(PrizePercentageDistribution prizePercentageDistribution) {
+        this.prizePercentageDistribution = prizePercentageDistribution;
     }
 
     public void setEntryFee(double entryFee) {
         this.entryFee = entryFee;
     }
 
-    public void setEnteredTeams(List<TeamModel> enteredTeams) {
-        this.enteredTeams = enteredTeams;
-    }
-
-    public void setPrizes(List<PrizeModel> prizes) {
-        this.prizes = prizes;
-    }
-
-    public void setRounds(List<List<MatchupModel>> rounds) {
-        this.rounds = rounds;
-    }
-
-    public List<PrizeModel> getPrizes() {
-        return prizes;
-    }
 
 
-    public List<List<MatchupModel>> getRounds() {
-        return rounds;
-    }
 
     @Override
     public String toString() {
@@ -78,9 +92,6 @@ public class TournamentModel {
                 "id=" + id +
                 ", tournamentName='" + tournamentName + '\'' +
                 ", entryFee=" + entryFee +
-                ", enteredTeams=" + enteredTeams +
-                ", prizes=" + prizes +
-                ", rounds=" + rounds +
                 '}';
     }
 }

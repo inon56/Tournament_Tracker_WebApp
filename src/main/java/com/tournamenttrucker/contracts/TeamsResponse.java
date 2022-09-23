@@ -1,5 +1,7 @@
 package com.tournamenttrucker.contracts;
 
-public class CreateTeamsResponse {
+public class TeamsResponse {
     private String tournamentName;
+
+
 }

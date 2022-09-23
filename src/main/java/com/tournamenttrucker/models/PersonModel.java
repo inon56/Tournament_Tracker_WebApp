@@ -1,15 +1,13 @@
 package com.tournamenttrucker.models;
 
-import com.google.gson.annotations.Expose;
 
 public class PersonModel {
 
     // The unique identifier for the person
-    private transient int id;
+    private int id;
     private String firstName;
     private String lastName;
     private String emailAddress;
-//    @Expose(serialize = true, deserialize = false)
     private String cellphoneNumber;
 
     public PersonModel() {

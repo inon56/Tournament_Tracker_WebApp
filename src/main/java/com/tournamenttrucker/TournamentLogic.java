@@ -2,178 +2,135 @@ package com.tournamenttrucker;
 
 import com.tournamenttrucker.dataAccess.SQLConnector;
 import com.tournamenttrucker.models.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+
+import java.util.*;
 
 public class TournamentLogic {
-//    public static void prizeDistribution(int numEntries)
-//    {
-//        PrizeDistributionModel prize = new PrizeDistributionModel();
-//        prize.setNumEntries(numEntries);
-//
-//    }
-    public static void createRounds(TournamentModel model)
-    {
-        List<TeamModel> randomizedTeams = new ArrayList<>(model.getEnteredTeams());
-        Collections.shuffle(randomizedTeams);
-        int rounds = findNumberOfRounds(randomizedTeams.size());
-        model.getRounds().add(createFirstRound(randomizedTeams));
-        createOtherRounds(model, rounds);
+    public static int numberOfTotalRounds = 0;
 
-//        int rounds = findNumberOfRounds(randomizedTeams.size());
-//        int byes = numberOfByes(rounds, randomizedTeams.size());
-//        model.getRounds().add(createFirstRound(byes, randomizedTeams));
-//        CreateOtherRounds(model, rounds);
-
-    }
-    private static int findNumberOfRounds(int teamCount)
+    public static void findNumberOfRounds(int teamsEntered)
     {
-        int output = 1;
         int val = 2;
 
-        while (val < teamCount)
+        while (val < teamsEntered)
         {
-            output += 1;
+            numberOfTotalRounds += 1;
             val *= 2;
         }
-        return output;
+
     }
 
-//    private static int numberOfByes(int rounds, int numberOfTeams)
-//    {
-//        int output = 0;
-//        int totalTeams = 1;
-//
-//        for (int i = 1; i < rounds; i++)
-//        {
-//            totalTeams *= 2;
-//        }
-//        output = totalTeams - numberOfTeams;
-//
-//        return output;
-//    }
-
-    private static List<MatchupModel> createFirstRound(List<TeamModel> teams)
+    private static void calculatePrizePayout(TournamentModel tournament,int winningTeam, int prizeOption)
     {
-        List<MatchupModel> output = new ArrayList<>();
-        MatchupModel curr = new MatchupModel();
+        double totalIncome = winningTeam * tournament.getEntryFee();
+        PrizePercentageDistribution prizeDistribution = PrizeGenerator.getPrizeOptions().get(prizeOption);
 
+        double firstPlacePrize = prizeDistribution.getFirst() * totalIncome;
+        double secondPlacePrize = prizeDistribution.getFirst() * totalIncome;
+
+//        double thirdPlacePrize = prizeDistribution.getFirst() * totalIncome;
+    }
+
+    private static int completeRound(TournamentModel tournament) {
+        // set score for all current matchups for the current round
+        // if not last round:
+        //     currentRound++
+        int numberOfTotalRounds = 2;// TODO: delete this
+        int currRound = tournament.getCurrentRound();
+        if (currRound < numberOfTotalRounds)
+        {
+            tournament.setCurrentRound(currRound + 1);
+            return 1;
+        }
+        // if last round:
+        //     give prize to winners
+        //calculatePrizePayout();
+        else
+        {
+            return 0;
+        }
+    }
+
+    private static HashMap<Integer, Integer> generateMatchups(List<Integer> teamsIds){
+        HashMap<Integer, Integer> matchups = new HashMap<>();
+        // for X teams generate X/2 random matches
+        Collections.shuffle(teamsIds);
+
+        for (int i = 0; i < teamsIds.size(); i += 2) {
+            matchups.put(teamsIds.get(i), teamsIds.get(i+1));
+        }
+
+        return matchups;
+    }
+    private static List<TeamModel> getCurrentRoundTeams(TournamentModel tournament){
+        List<TeamModel> teams = new ArrayList<>();
+
+        if (tournament.getCurrentRound() == 1) {
+            teams = SQLConnector.getAllAvailableTeams();
+        }
+        else {
+            List<MatchupModel> matchups = SQLConnector.getCurrentRoundMatchupsWinnerId(tournament.getId(), tournament.getCurrentRound() - 1);
+            // from every matchup get the winner, and put them all in a list
+            for (MatchupModel matchup : matchups) {
+                TeamModel winnerTeam = new TeamModel(matchup.getWinnerId());
+                teams.add(winnerTeam);
+            }
+        }
+
+        return teams;
+    }
+
+    public static void createNextRound(int tournamentId)
+    {
+        // 1. take the tournamentId and get tournament from DB
+        TournamentModel tournament = SQLConnector.getTournamentById(tournamentId);
+
+        // 2. get teams according to tournament id and current round
+        List<TeamModel> teams;
+        teams = getCurrentRoundTeams(tournament);
+
+        // 3. read all matchups from previous round and find winners that will continue to this round
+        // 4. generate randomly matchups
+        // 5. write matchups to DB
+        // 6. call completeRound
+        List<Integer> teamsIds = new ArrayList<>();
         for (TeamModel team : teams)
-        {
-            MatchupEntryModel matchEntry = new MatchupEntryModel();
-            matchEntry.setTeamCompeting(team);
-            curr.getEntries().add(matchEntry);
-        }
-        return output;
-    }
+            teamsIds.add(team.getId());
 
-     // Create every round after the first
-    private static void createOtherRounds(TournamentModel model, int rounds)
-    {
-        int round = 2; // Current round
-        List<MatchupModel> previousRound = model.getRounds().get(0);
-        List<MatchupModel> currRound = new ArrayList<>();
-        MatchupModel currMatchup = new MatchupModel();
-
-        while (round <= rounds)
-        {
-            for (MatchupModel match : previousRound)
-            {
-                MatchupEntryModel matchEntry = new MatchupEntryModel();
-                matchEntry.setParentMatchup(match);
-                currMatchup.getEntries().add(matchEntry);
-
-                if (currMatchup.getEntries().size() > 1)
-                {
-                    currMatchup.setMatchupRound(round);
-                    currRound.add(currMatchup);
-                    currMatchup = new MatchupModel();
-                }
-            }
-            model.getRounds().add(currRound);
-            previousRound = currRound;
-            currRound = new ArrayList<>();
-            round++;
+        HashMap<Integer, Integer> matchups = generateMatchups(teamsIds);
+        for (Map.Entry<Integer, Integer> matchup : matchups.entrySet()) {
+            SQLConnector.createMatchup(tournamentId, tournament.getCurrentRound(), matchup.getKey(), matchup.getValue());
         }
     }
 
-    private static void completeTournament(TournamentModel model)
+    public static void completeTournament(TournamentModel tournament, List<String> teamsNames)
     {
-        SQLConnector.CompleteTournament(model);
-//        TeamModel winners1 = model.getRounds().Last().First().Winner;
-//        TeamModel runnerUp2 = model.getRounds().Last().First().Entries.Where(x => x.TeamCompeting != winners).First().TeamCompeting;
-
-        double winnerPrize = 0;
-        double runnerUpPrize = 0;
-
-        // if we have no prizes we haven't give any money
-        if (model.getPrizes().size() > 0)
-        {
-            double totalIncome = model.getPrizes().size() * model.getEntryFee();
-
-//            PrizeModel firstPlacePrize1 = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault(); // FirstOrDefault meaning find the first value but if you dont find one then return null or 0 according to the type
-//            PrizeModel secondPlacePrize2 = model.getPrizes().Where(x => x.PlaceNumber == 1).FirstOrDefault();
-
-            PrizeModel firstPlacePrize = model.getPrizes().stream().filter((prize) -> prize.getPlaceNumber() == 1).findFirst().orElse(null);
-            PrizeModel secondPlacePrize = model.getPrizes().stream().filter((prize) -> prize.getPlaceNumber() == 1).findFirst().orElse(null);
-
-            if (firstPlacePrize != null)
-            {
-                winnerPrize = calculatePrizePayout(firstPlacePrize, totalIncome);
-            }
-
-            if (secondPlacePrize != null)
-            {
-                runnerUpPrize = calculatePrizePayout(secondPlacePrize, totalIncome);
-            }
-        }
-
-        // Send Email to all tournament
+        SQLConnector.completeTournament(tournament);
+        calculatePrizePayout(tournament, teamsNames.size(), tournament.getPrizeOption());
 
         StringBuilder body = new StringBuilder(); // not synchronized
 
-//        String subject = "In " + model.getTournamentName() + " " + winners.getTeamName() + " has won!";
         body.append("<h1>We have a winner</h1>");
         body.append("<p>Congratulations to our winner on a great tournament.</p>");
         body.append("<br/>");
-
-        if (winnerPrize > 0)
-//            body.append("<p>" + winners.getTeamName() + " " + "will receive " + winnerPrize + "</P>");
-
-        if (runnerUpPrize > 0)
-//            body.append("<p>" + runnerUp.getTeamName() + " " + "will receive " + runnerUpPrize +"</P>");
 
         body.append("<p>Thanks for a great tournament everyone!</P>");
 
         List<String> recipients = new ArrayList<>();
 
-        for (TeamModel team : model.getEnteredTeams())
-        {
-            for (PersonModel person : team.getTeamMembers())
-            {
-                String email = person.getEmailAddress();
-                if (email.length() > 0)
-                    recipients.add(email);
-            }
-        }
+//        for (TeamModel team : model.getEnteredTeams())
+//        {
+//            for (PersonModel person : team.getTeamMembers())
+//            {
+//                String email = person.getEmailAddress();
+//                if (email.length() > 0)
+//                    recipients.add(email);
+//            }
+//        }
 
 //        EmailLogic.sendEmail(recipients, subject, body.toString());
     }
 
-    private static double calculatePrizePayout(PrizeModel prize, double totalIncome)
-    {
-        double output = 0;
 
-
-
-//        if (prize.getPrizeAmount() > 0)
-//            output = prize.getPrizeAmount();
-//
-//        else
-//            output = totalIncome * (prize.getPrizePercentage() / 100);
-
-        return output;
-    }
 
 }

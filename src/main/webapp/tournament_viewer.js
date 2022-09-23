@@ -1,31 +1,12 @@
-// example:
-let unplayedRounds = [];
 
-let playedRounds = []
+let unplayedMatchups = {};
 
-let round =
+let playedMatchups =
     {
-        "number": 1,
-        "games":
-            [
-                {
-                    "teamOne": "john",
-                    "teamTwo": "dan",
-                },
-                {
-                    "teamOne": "sony",
-                    "teamTwo": "xbox",
-                }
-            ]
+        "tournamentName": "",
+        "round": 0,
+        "matchups": []
     };
-
-window.onload = () => {
-    document.getElementById('getNextRound').style.visibility = 'hidden';
-    // getRound();
-    updateRoundList(round);
-    populateTeamDropDownList()
-}
-// end
 
 
 const tournamentName = sessionStorage.getItem("tournamentName");
@@ -45,103 +26,102 @@ selectMatchupList.addEventListener('change', (event) =>
     document.getElementById('teamTwoName').innerHTML = array[1];
 });
 
-// TODO: check if select have no options
-function listenerNoOptions()
-{
-    if (selectMatchupList.options.length === 0)
-        document.getElementById('getNextRound').style.visibility = 'visible';
-}
 
 function getNextRoundClicked()
 {
-    document.getElementById('getNextRound').style.visibility = 'hidden';
+    if (unplayedMatchups['matchups'].length === 0)
+        getRound();
+    else
+        alert("Please fill in all the matchups before getting the next round");
+}
+
+window.onload = () => {
     getRound();
 }
 
 // GET Rounds
-function getRound()
+function getRound() // export?
 {
-    fetch("tournamentViewerServlet", {
+    fetch("tournamentViewerServlet?" + new URLSearchParams({tournamentName: tournamentName}), {
         method: "GET"
     })
     .then(res => {return res.json()})
     .then((data) => {
+        console.log(data);
         updateRoundList(data);
     })
     .then(() => {
-        populateTeamDropDownList()
+        populateMatchupsDropDownList()
     })
     .catch((error) => alert(error))
 }
 
-// json: { "number": 1,"games": [{"team1": "cool-team", "team2": "super-team"}, {..}, {...}]
-function updateRoundList(data)
+function updateRoundList(roundMatchups)
 {
-    // round = JSON.parse(data);
-    document.getElementById("roundNumber").innerHTML = round['number'];
+    unplayedMatchups = roundMatchups
+    document.getElementById("roundNumber").innerHTML = unplayedMatchups['round'];
+    playedMatchups["tournamentName"] = unplayedMatchups['tournamentName'];
+    playedMatchups["round"] = unplayedMatchups['round'];
 }
 
-function populateTeamDropDownList()
+function populateMatchupsDropDownList()
 {
-    for (const game of round['games'])
+    for (const matchup of unplayedMatchups['matchups'])
     {
         let option = document.createElement("option");
-        option.text = game['teamOne'] + " vs " + game['teamTwo'];
+        option.text = matchup['teamOneName'] + " vs " + matchup['teamTwoName'];
         selectMatchupList.add(option);
     }
 }
 
 function scoreButtonClicked()
 {
-    let matchText = selectMatchupList.value;
-    if (matchText === '')
+    let matchupText = selectMatchupList.value;
+    if (matchupText === '')
     {
         alert("option not selected");
         return false;
     }
-
+    // let matchText = selectMatchupList.options[selectMatchupList.selectedIndex].text;
+    const array = matchupText.split(" vs ");
+    let teamOneName = document.getElementById('teamOneName').innerHTML = array[0];
+    let teamTwoName = document.getElementById('teamTwoName').innerHTML = array[1];
     let teamOneScore = parseInt(document.getElementById("teamOneScore").value, 10);
     let teamTwoScore = parseInt(document.getElementById("teamTwoScore").value, 10);
     let winner = document.getElementById("winner");
 
     if (validateScores(teamOneScore, teamTwoScore))
     {
-        let result = matchText + " " +  teamOneScore.toString() + " " + teamTwoScore.toString();
-        playedRounds.push(result);
+        // push into played matchups
+        let playedMatchup = {"teamOneName": teamOneName, "teamTwoName": teamTwoName, "teamOneScore": teamOneScore, "teamTwoScore": teamTwoScore};
+        playedMatchups['matchups'].push(playedMatchup);
 
-        if (teamOneScore > teamTwoScore)
-        {
+        // remove from unplayed matchups
+        unplayedMatchups = unplayedMatchups['matchups'].filter(matchup => matchup.teamOneName === teamOneName);
+
+        if (teamOneScore > teamTwoScore) {
             winner.innerHTML = document.getElementById("teamOneName").innerHTML + " wins!";
         }
-        else if (teamTwoScore > teamOneScore)
-        {
+        else if (teamTwoScore > teamOneScore) {
             winner.innerHTML = document.getElementById("teamTwoName").innerHTML + " wins!";
         }
+
         winner.style.display = 'block';
 
-        selectMatchupList.options[selectMatchupList.selectedIndex].remove();
-        selectMatchupList.value = '';
-
+        // insert into played matchups select box
         let playedMatchupList = document.getElementById("playedMatchupList")
         let option = document.createElement("option");
-        option.text = result;
+        let resultMatchupText = selectMatchupList.options[selectMatchupList.selectedIndex].text;
+        option.text = resultMatchupText + " " + teamOneScore + " " + teamTwoScore;
         playedMatchupList.add(option);
 
-        // TODO:
-        // send the number of winning team
-        // postGame(teamOneScore, teamTwoScore);
-
-        if (unplayedRounds.length === 0)
-        {
-            checkForNextRound();
-        }
+        // remove from unplayed matchups select box
+        selectMatchupList.options[selectMatchupList.selectedIndex].remove();
+        selectMatchupList.value = '';
     }
 }
 
-function checkForNextRound()
-{
-    document.getElementById('getNextRound').style.visibility = 'visible';
-}
+
 
 
 function validateScores(teamOneScore, teamTwoScore)
@@ -159,17 +139,26 @@ function validateScores(teamOneScore, teamTwoScore)
     return true;
 }
 
-function postGame(teamOneScore, teamTwoScore)
+function sendRoundClicked()
 {
-    const data = {"tournamentName": tournamentName, "game": {"teamOne": "aaa", "teamTwo": "bbb", "teamOneScore": teamOneScore, "teamTwoScore": teamTwoScore}};
+    if (playedMatchups['matchups'].length === 0)
+        postRound();
+    else
+        alert("Please fill in all the matchups before sending");
 
-    fetch("tournamentServlet", {
+}
+
+function postRound()
+{
+    // const data = {"tournamentName": tournamentName, "round": 1, "matchups": {"teamOne": "aaa", "teamTwo": "bbb", "teamOneScore": 5, "teamTwoScore": 8}};
+
+    fetch("tournamentViewerServlet", {
         method: 'POST',
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(playedMatchups)
     })
-    // .then(res => {return res.json()})
-    // .then((text) => alert(text))
+    .then(res => {return res.json()})
+    .then((text) => alert(text))
     .catch((error) => alert(error))
 }
 

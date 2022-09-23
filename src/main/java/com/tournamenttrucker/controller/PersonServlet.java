@@ -27,13 +27,41 @@ public class PersonServlet extends HttpServlet {
         reader.close();
 
         Gson gson = new Gson();
-        CreatePersonRequest person = gson.fromJson(sb.toString(), CreatePersonRequest.class);
+        CreatePersonRequest personRequest = gson.fromJson(sb.toString(), CreatePersonRequest.class);
 
-        SQLConnector.createPerson(person); // check player exist
+        // validate the person details
+        if (validateCreatePlayer(personRequest))
+        {
+            // create person from the CreatePersonRequest
+            PersonModel person = new PersonModel(
+                    personRequest.getFirstName(),
+                    personRequest.getLastName(),
+                    personRequest.getEmailAddress(),
+                    personRequest.getCellphoneNumber());
+
+            SQLConnector.createPerson(person);
+        }
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/text;charset=utf-8");
         out.print("Person created");
         out.close();
+    }
+
+    private static boolean validateCreatePlayer(CreatePersonRequest personRequest)
+    {
+        String nameRegex = "^[a-zA-Z]*$";
+        String emailRegex = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\\\.[A-Z]{2,6}$";
+        String digitsRegex = "[0-9]+";
+
+        if (!(personRequest.getFirstName().matches(nameRegex)))
+            return false;
+        if (!(personRequest.getLastName().matches(nameRegex)))
+            return false;
+        if (!(personRequest.getEmailAddress().matches(emailRegex)))
+            return false;
+        if (!(personRequest.getCellphoneNumber().matches(digitsRegex)))
+            return false;
+        return true;
     }
 }

@@ -7,6 +7,7 @@ public class CreateTeamRequest {
     private String teamName;
     private List<String> teamMembersEmails; // emails
 
+
     public String getTeamName() {
         return teamName;
     }

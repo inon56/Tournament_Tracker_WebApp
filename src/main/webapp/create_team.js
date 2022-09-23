@@ -24,8 +24,6 @@ function getPlayers()
 // adding the players to the availablePlayersList
 function updatePlayersLists(players)
 {
-    // let players = JSON.parse(data);
-    // availablePlayersList = ['players'];
     availablePlayersList = players;
 }
 
@@ -103,7 +101,6 @@ function removeSelectedTeamPlayerClicked()
     }
 }
 
-
 function createTeamClicked()
 {
     let teamName = document.getElementById("teamName").value;
@@ -151,7 +148,18 @@ function postTeam(team)
 	})
 	.then(res => {return res.text()})
     .then((text) => alert(text))
+    .then(removeEnteredTeamPlayers())
     .catch((error) => alert(error))
+}
+
+function removeEnteredTeamPlayers()
+{
+    // remove from array
+    teamPlayersList = [];
+
+    // remove from team players select box
+    let teamPlayers = document.getElementById("teamPlayersList");
+    teamPlayers.length = 0;
 }
 
 
