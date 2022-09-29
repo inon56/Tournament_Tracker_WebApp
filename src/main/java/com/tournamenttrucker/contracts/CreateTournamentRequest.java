@@ -29,25 +29,5 @@ public class CreateTournamentRequest {
         this.tournamentName = tournamentName;
     }
 
-    public void setEntryFee(int entryFee) {
-        this.entryFee = entryFee;
-    }
-
-    public void setEnteredTeams(List<String> enteredTeams) {
-        this.enteredTeams = enteredTeams;
-    }
-
-    public void setPrizeOption(int prizeOption) {
-        this.prizeOption = prizeOption;
-    }
-
-    @Override
-    public String toString() {
-        return "CreateTournamentRequest{" +
-                "tournamentName='" + tournamentName + '\'' +
-                ", entryFee=" + entryFee +
-                ", enteredTeams=" + enteredTeams +
-                '}';
-    }
 }
 

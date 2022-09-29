@@ -13,7 +13,9 @@ function getTournament()
     })
         .then(res => {return res.json()}) // res.json returns a promise
         .then((data) => {
-            updateLists(data);})
+            updateTeamsList(data);
+            updatePrizesList(data);
+        })
         .then(() => {
             populateTeamsDropDownList();
             populatePrizeOptionsDropDownList();
@@ -22,15 +24,16 @@ function getTournament()
 }
 
 
-function updateLists(data)
+function updateTeamsList(data)
 {
-    // teamsList
     for (const team of data["teamsNames"])
     {
         teamsList.push(team);
     }
+}
 
-    // prizesList
+function updatePrizesList(data)
+{
     const count = Object.keys(data["prizeOptions"]).length;
     for (let i = 1; i <= count; i++)
     {
@@ -59,6 +62,7 @@ function populatePrizeOptionsDropDownList()
     for (const prize of prizesList)
     {
         let option = document.createElement("option");
+        concatTxt += "option " // TODO: add the number , needed for the post
 
         for (const [key, val] of Object.entries(prize))
         {
@@ -105,9 +109,9 @@ function removeSelectedTeamClicked()
     teamSelected.add(option);
 
     // update lists
-    teamsList.push(teamText); // TODO maybe need to add value
+    teamsList.push(teamText);
 
-    let index = enteredTeams.indexOf(teamValue) // TODO maybe need to add value
+    let index = enteredTeams.indexOf(teamValue)
     if (index !== -1)
         enteredTeams.splice(index,1);
 }
@@ -116,8 +120,11 @@ function createTournamentClicked()
 {
     let tournamentName = document.getElementById("tournamentName").value;
     let entryFee = document.getElementById("entryFee").value;
-    let txt = document.getElementById("prizeOptionsList").value.split(" "); // string
-    let prizeOption = txt[1];
+    // let txt = document.getElementById("prizeOptionsList").value.split(" ",2); // string
+    // let prizeOption = 2// txt[1];
+
+    let index = document.getElementById("prizeOptionsList").value.split(" ",2);
+    let prizeOption = prizesList.indexOf(index);
 
     if (validateCreateTournament(tournamentName, entryFee, prizeOption))
     {
@@ -139,7 +146,12 @@ function validateCreateTournament(tournamentName, entryFee)
         alert("Invalid entry fee, numbers only!");
         return false;
     }
-    if (enteredTeams % 2 !== 0)
+    if (parseInt(entryFee) === 0)
+    {
+        alert("Please enter entry fee!");
+        return false;
+    }
+    if (enteredTeams.length % 2 !== 0)
     {
         alert("the number of entered teams is not even!")
         return false;
@@ -157,8 +169,14 @@ function postTournament(tournamentName, entryFee, prizeOption)
         headers: { "content-type": "application/json" }, // Explicitly posting JSON
         body: JSON.stringify(tournament) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
     })
-        .then(res => {return res.text()})
-        .then((text) => alert(text + ", click to close the window"))
-        .then(window.close)
-        .catch(() => alert((error) => alert(error)))
+    .then(res => {
+        if (res.ok) {
+            return res.text();
+        }
+        else
+            return "status code: 400";
+    })
+    .then((text) => alert(text + ", click to close the window"))
+    .then(window.close)
+    .catch(() => alert((error) => alert(error)))
 }

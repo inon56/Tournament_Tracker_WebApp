@@ -146,9 +146,16 @@ function postTeam(team)
 	    headers: { "content-type": "application/json" },
 	    body: JSON.stringify(team)
 	})
-	.then(res => {return res.text()})
+    .then(res => {
+            if (res.ok)
+            {
+                removeEnteredTeamPlayers();
+                return res.text();
+            }
+            else
+                return "status code: 400";
+        })
     .then((text) => alert(text))
-    .then(removeEnteredTeamPlayers())
     .catch((error) => alert(error))
 }
 

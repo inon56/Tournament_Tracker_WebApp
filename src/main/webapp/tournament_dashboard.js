@@ -11,7 +11,6 @@ function loadTournamentClicked()
     
     sessionStorage.setItem("tournamentName", tournamentName);
     window.open('tournament_viewer.html')
-    getRound();
 }
 
 function getExistingTournaments()
@@ -23,9 +22,7 @@ function getExistingTournaments()
     .then((data) => {
         populateTournamentsDropDown(data);
     })
-    .catch(() => {
-        alert('problem with getExistingTournaments:');
-    })
+    .catch((error) => alert(error + "get"))
 }
 
 
@@ -39,4 +36,20 @@ function populateTournamentsDropDown(data)
         tournaments.add(option);
     }
 }
+
+function deleteTournament()
+{
+    let tournaments = document.getElementById("tournamentList");
+    let tournamentName = tournaments.options[tournaments.selectedIndex].text;
+
+    fetch("tournamentDashboardServlet", {
+        method: 'POST',
+        headers: { "content-type": "application/text" },
+        body: JSON.stringify(tournamentName)
+    })
+        .then(res => {return res.text()})
+        .then((text) => alert(text + "\nplease reload the page!"))
+        .catch((error) => alert(error))
+}
+
 

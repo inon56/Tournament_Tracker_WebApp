@@ -1,22 +1,16 @@
 package com.tournamenttrucker;
 
+import com.tournamenttrucker.models.PersonModel;
+import com.tournamenttrucker.models.TournamentModel;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 public class EmailLogic {
 
-    // need teamId - teamName, placeNumber, double prizeAmount
-    public static void teamSpecificEmail(List<Integer> WinningTeams, int placeNumber, double prizeAmount)
-    {
-
-    }
-
-    public static void sendEmail(List<String> players, String subject, String body)
+    public static void sendEmail(TournamentModel tournament,String teamName, List<PersonModel> players, Double prize)
     {
         final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
         // Get a Properties object
@@ -31,10 +25,12 @@ public class EmailLogic {
         props.put("mail.store.protocol", "pop3");
         props.put("mail.transport.protocol", "smtp");
         final String username = "leino333@gmail.com";//
-        final String password = "hdfaolqwhsjypaun";
+        //TODO: add password
+        final String password = "";
 
         // Sender's email ID needs to be mentioned
         String from = "leino333@gmail.com";
+        String to = "leino333@gmail.com";
 
         try{
             Session session = Session.getDefaultInstance(props,
@@ -46,17 +42,32 @@ public class EmailLogic {
             // Create a new message
             Message  message = new MimeMessage(session);
 
-            for (String emailAddress : players)
+            for (PersonModel player : players)
             {
                 // Set To: header field of the header.
-                message.addRecipient(Message.RecipientType.TO, new InternetAddress(emailAddress));
+//                to = player.getEmailAddress();
+                message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             }
+
+            String subject = "Tournament completed";
+            StringBuilder body = new StringBuilder();
+            body.append("Hello to: ");
+            body.append(teamName);
+            body.append(" team player");
+            body.append("\n");
+            body.append("Thank you for participating in the tournament: ");
+            body.append(tournament.getTournamentName());
+            body.append("\n");
+            body.append("Your team won the prize: ");
+            body.append(prize);
+            body.append("\n");
+            body.append("Thanks for a great tournament everyone!");
 
             // Set From: header field of the header.
             message.setFrom(new InternetAddress(from));
 
             message.setSubject(subject);
-            message.setText(body);
+            message.setText(body.toString());
 
             // Send message
             Transport.send(message);

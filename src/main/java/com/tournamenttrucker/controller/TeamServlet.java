@@ -20,7 +20,7 @@ import java.util.List;
 public class TeamServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        List<PersonModel> playersList = SQLConnector.getAllPerson();
+        List<PersonModel> playersList = SQLConnector.getAllAvailablePerson();
         List<PersonResponse> playersResponse = new ArrayList<>();
 
         // convert to personResponse
@@ -39,8 +39,6 @@ public class TeamServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("the team servlet post method called");
-
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
@@ -48,17 +46,15 @@ public class TeamServlet extends HttpServlet {
             sb.append(line);
         }
         reader.close();
-        System.out.println(sb.toString());
+
         Gson gson = new Gson();
-        CreateTeamRequest team = gson.fromJson(sb.toString(), CreateTeamRequest.class);
+        CreateTeamRequest teamRequest = gson.fromJson(sb.toString(), CreateTeamRequest.class);
 
-        // validate team name
-        String nameRegex = "^[a-zA-Z]*$";
-        if (!(team.getTeamName().matches(nameRegex)))
-            System.out.println("Invalid team name");
+        if (!validateCreateTeam(res, teamRequest))
+            return;
 
-        String teamName = team.getTeamName();
-        List<String > teamMembers = team.getTeamMembers();
+        String teamName = teamRequest.getTeamName();
+        List<String > teamMembers = teamRequest.getTeamMembersEmails();
 
         SQLConnector.createTeam(teamName, teamMembers);
 
@@ -66,5 +62,23 @@ public class TeamServlet extends HttpServlet {
         res.setContentType("application/text;charset=utf-8");
         out.print("Team created");
         out.close();
+    }
+
+    public static boolean validateCreateTeam(HttpServletResponse res, CreateTeamRequest teamRequest) throws IOException {
+        String nameRegex = "^[a-zA-Z]*$";
+        String badParameter = null;
+
+        if (!(teamRequest.getTeamName().matches(nameRegex)))
+            badParameter = "invalid";
+        if (!SQLConnector.checkPlayersExist(teamRequest.getTeamMembersEmails()))
+            badParameter = "invalid";
+
+        if (badParameter != null)
+        {
+            res.sendError(400);
+            return false;
+        }
+
+        return true;
     }
 }

@@ -1,11 +1,4 @@
 package com.tournamenttrucker.models;
-
-import java.util.ArrayList;
-import java.util.List;
-
-/// <summary>
-/// Represents one match in the tournament
-/// </summary>
 public class MatchupModel {
 
     // The unique identifier for the matchup

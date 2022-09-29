@@ -6,51 +6,6 @@ import com.tournamenttrucker.models.*;
 import java.util.*;
 
 public class TournamentLogic {
-    public static int numberOfTotalRounds = 0;
-
-    public static void findNumberOfRounds(int teamsEntered)
-    {
-        int val = 2;
-
-        while (val < teamsEntered)
-        {
-            numberOfTotalRounds += 1;
-            val *= 2;
-        }
-
-    }
-
-    private static void calculatePrizePayout(TournamentModel tournament,int winningTeam, int prizeOption)
-    {
-        double totalIncome = winningTeam * tournament.getEntryFee();
-        PrizePercentageDistribution prizeDistribution = PrizeGenerator.getPrizeOptions().get(prizeOption);
-
-        double firstPlacePrize = prizeDistribution.getFirst() * totalIncome;
-        double secondPlacePrize = prizeDistribution.getFirst() * totalIncome;
-
-//        double thirdPlacePrize = prizeDistribution.getFirst() * totalIncome;
-    }
-
-    private static int completeRound(TournamentModel tournament) {
-        // set score for all current matchups for the current round
-        // if not last round:
-        //     currentRound++
-        int numberOfTotalRounds = 2;// TODO: delete this
-        int currRound = tournament.getCurrentRound();
-        if (currRound < numberOfTotalRounds)
-        {
-            tournament.setCurrentRound(currRound + 1);
-            return 1;
-        }
-        // if last round:
-        //     give prize to winners
-        //calculatePrizePayout();
-        else
-        {
-            return 0;
-        }
-    }
-
     private static HashMap<Integer, Integer> generateMatchups(List<Integer> teamsIds){
         HashMap<Integer, Integer> matchups = new HashMap<>();
         // for X teams generate X/2 random matches
@@ -66,7 +21,7 @@ public class TournamentLogic {
         List<TeamModel> teams = new ArrayList<>();
 
         if (tournament.getCurrentRound() == 1) {
-            teams = SQLConnector.getAllAvailableTeams();
+            teams = SQLConnector.getTournamentTeams(tournament.getId());
         }
         else {
             List<MatchupModel> matchups = SQLConnector.getCurrentRoundMatchupsWinnerId(tournament.getId(), tournament.getCurrentRound() - 1);
@@ -103,34 +58,60 @@ public class TournamentLogic {
         }
     }
 
-    public static void completeTournament(TournamentModel tournament, List<String> teamsNames)
+    private static Map<Integer, Double> calculatePrizePayout(TournamentModel tournament, int winningTeam, int prizeOption)
     {
-        SQLConnector.completeTournament(tournament);
-        calculatePrizePayout(tournament, teamsNames.size(), tournament.getPrizeOption());
+        Map<Integer, Double> prizes = new HashMap<>();
 
-        StringBuilder body = new StringBuilder(); // not synchronized
+        double totalIncome = winningTeam * tournament.getEntryFee();
+        PrizePercentageDistribution prizeDistribution = PrizeGenerator.getPrizeOptions().get(prizeOption);
 
-        body.append("<h1>We have a winner</h1>");
-        body.append("<p>Congratulations to our winner on a great tournament.</p>");
-        body.append("<br/>");
+        double firstPlacePrize = prizeDistribution.getFirst() * totalIncome;
+        double secondPlacePrize = prizeDistribution.getFirst() * totalIncome;
+        prizes.put(1, firstPlacePrize);
+        prizes.put(2, secondPlacePrize);
 
-        body.append("<p>Thanks for a great tournament everyone!</P>");
-
-        List<String> recipients = new ArrayList<>();
-
-//        for (TeamModel team : model.getEnteredTeams())
-//        {
-//            for (PersonModel person : team.getTeamMembers())
-//            {
-//                String email = person.getEmailAddress();
-//                if (email.length() > 0)
-//                    recipients.add(email);
-//            }
-//        }
-
-//        EmailLogic.sendEmail(recipients, subject, body.toString());
+        return prizes;
     }
 
+    public static void completeTournament(TournamentModel tournament, int currentRound)
+    {
+        // set tournament Active = 0 , meaning it is completed
+        SQLConnector.completeTournament(tournament);
 
+        MatchupModel matchup = SQLConnector.getCurrentRoundMatchup(tournament.getId(), currentRound);
+
+        int firstPlaceTeamId;
+        int secondPlaceTeamId;
+        int teamOneScore = matchup.getTeamOneScore();
+        int teamTwoScore =  matchup.getTeamTwoScore();
+        if (teamOneScore > teamTwoScore) {
+            firstPlaceTeamId = matchup.getTeamOneId();
+            secondPlaceTeamId = matchup.getTeamTwoId();
+        }
+        else {
+            firstPlaceTeamId = matchup.getTeamTwoId();
+            secondPlaceTeamId = matchup.getTeamOneId();
+        }
+
+        Map<Integer, TeamModel> winningTeams = new HashMap<>();
+        winningTeams.put(1, new TeamModel(firstPlaceTeamId));
+        winningTeams.put(2, new TeamModel(secondPlaceTeamId));
+
+        // get winning teams names
+        for (Map.Entry<Integer, TeamModel> team : winningTeams.entrySet()) {
+            team.getValue().setTeamName(SQLConnector.getTeamNameById(team.getValue().getId()));
+        }
+
+        // get prizes layout
+        Map<Integer, Double> prizes = calculatePrizePayout(tournament, winningTeams.size(), tournament.getPrizeOption());
+
+        // TODO: send emails
+//        for (int i = 1; i < winningTeams.size() + 1; i++)
+//        {
+//            List<PersonModel> players = SQLConnector.getAllTeamMembers(winningTeams.get(i).getId());
+//
+//            EmailLogic.sendEmail(tournament,winningTeams.get(i).getTeamName(), players, prizes.get(i));
+//        }
+    }
 
 }

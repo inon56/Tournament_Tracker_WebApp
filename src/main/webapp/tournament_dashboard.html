@@ -15,9 +15,12 @@
         <label>Load Existing Tournament</label>
         </br>
         <select id="tournamentList" name="tournamentList" style="width: 280px;">
-        </select>        
-        <input class="create_buttons" type="button" value="Load Tournament" onclick="loadTournamentClicked()"> 
-        <input class="create_buttons" style="font-weight: bold;width: 220px;" type="button"  value="Create Tournament" onclick="window.open('create_tournament.html')"> 
+        </select>
+        <br>
+        <input class="create_buttons"  style="font-weight: bold;width: 220px;display:inline-block" type="button" value="Load Tournament" onclick="loadTournamentClicked()">
+        <input class="create_buttons" style="font-weight: bold;width: 220px;display:inline-block;" type="button"  value="Delete Tournament" onclick="deleteTournament()">
+        <input class="create_buttons" style="font-weight: bold;width: 220px;" type="button"  value="Create Tournament" onclick="window.open('create_tournament.html')">
+
     </form>
 </body>
 <script type="text/javascript" src="tournament_dashboard.js"></script>

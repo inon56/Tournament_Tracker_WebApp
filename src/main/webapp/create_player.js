@@ -6,8 +6,8 @@ function createPlayerClicked()
     let email = document.getElementById("email").value;
     let cellphone = document.getElementById("cellphone").value;
 
-    if (validateCreatePlayer(firstName, lastName, email, cellphone))
-    {
+    // if (validateCreatePlayer(firstName, lastName, email, cellphone))
+    // {
         const player = {
             "firstName" : firstName,
             "lastName" : lastName,
@@ -18,7 +18,7 @@ function createPlayerClicked()
         postPlayer(player);
 
         clearPlayerFields();
-    }
+    // }
 }
 
 
@@ -70,7 +70,12 @@ function postPlayer(data)
         headers: { 'content-type': 'application/json' }, // Explicitly posting JSON
         body: JSON.stringify(data) // JSON.stringify(object) utility function is used to transform a JavaScript object into a JSON string. body option accepts a string but not an object.
     })
-    .then(res => {return res.text()})
+    .then(res => {
+        if (res.ok)
+            return res.text();
+        else
+            return "status code: 400";
+    })
     .then((text) => alert(text))
-    .catch(() => {alert('There has been a problem with your fetch operation:')})
+    .catch((error) => alert(error))
 }

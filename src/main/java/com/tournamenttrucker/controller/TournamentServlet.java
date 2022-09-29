@@ -5,10 +5,9 @@ import com.tournamenttrucker.TournamentLogic;
 import com.tournamenttrucker.contracts.CreateTournamentRequest;
 import com.tournamenttrucker.contracts.TournamentResponse;
 import com.tournamenttrucker.dataAccess.SQLConnector;
-import com.tournamenttrucker.models.PrizeGenerator;
+import com.tournamenttrucker.PrizeGenerator;
 import com.tournamenttrucker.models.TeamModel;
 import com.tournamenttrucker.models.TournamentModel;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,20 +20,15 @@ import java.util.List;
 
 @WebServlet(value = "/tournamentServlet")
 public class TournamentServlet extends HttpServlet {
-    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException
+    public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("tournament servlet get called");
-
         List<TeamModel> teams = SQLConnector.getAllAvailableTeams();
         List<String> teamsNames = new ArrayList<>();
         for (TeamModel team : teams) {
-            System.out.println(team.getTeamName());
             teamsNames.add(team.getTeamName());
         }
 
-
         TournamentResponse tournamentResponse = new TournamentResponse(teamsNames);
-
         Gson gson = new Gson();
         String jsonString = gson.toJson(tournamentResponse);
 
@@ -46,8 +40,6 @@ public class TournamentServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException
     {
-        System.out.println("tournament servlet get method");
-
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;
@@ -56,15 +48,13 @@ public class TournamentServlet extends HttpServlet {
         }
         reader.close();
 
-//        sample: String jsonString = "{\"tournamentName\": NBA, \"entryFee\": 50, \"enteredTeams\": [lakers,dodgers,bulls,PSZ], \"prizeOption\": 1}";
+        System.out.println(sb);
         Gson gson = new Gson();
         CreateTournamentRequest tournamentRequest = gson.fromJson(sb.toString(), CreateTournamentRequest.class);
 
-        try{
-            PrizeGenerator.getByOption(tournamentRequest.getPrizeOption());
-        } catch (Exception e){
-            res.sendError(400, "Wrong option number");
-        }
+
+        if (!validateInput(res, tournamentRequest))
+            return;
 
         TournamentModel tournament = new TournamentModel();
         tournament.setTournamentName(tournamentRequest.getTournamentName());
@@ -77,13 +67,36 @@ public class TournamentServlet extends HttpServlet {
             teamsEntered.add(new TeamModel(teamName));
         }
 
-        SQLConnector.createTournament(tournament, teamsEntered); // called only once
-        TournamentLogic.findNumberOfRounds(teamsEntered.size()); // TODO: adjust this
+        SQLConnector.createTournament(tournament, teamsEntered);
         TournamentLogic.createNextRound(tournament.getId());
 
         PrintWriter out = res.getWriter();
         res.setContentType("application/text;charset=utf-8");
         out.print("Tournament created");
         out.close();
+    }
+
+    private static boolean validateInput(HttpServletResponse res, CreateTournamentRequest tournamentRequest) throws IOException
+    {
+        String nameRegex = "^[a-zA-Z]*$";
+        String badParameter = null;
+
+        if (!tournamentRequest.getTournamentName().matches(nameRegex))
+            badParameter = "invalid";
+        if (tournamentRequest.getEntryFee() <= 0)
+            badParameter = "invalid";
+        if (!PrizeGenerator.getPrizeOptions().containsKey(tournamentRequest.getPrizeOption()))
+            badParameter = "invalid";
+        // check if the teams are in the DB
+        if (!SQLConnector.checkTeamsExist(tournamentRequest.getEnteredTeams()))
+            badParameter = "invalid";
+
+        if (badParameter != null)
+        {
+            res.sendError(400);
+            return false;
+        }
+
+        return true;
     }
 }

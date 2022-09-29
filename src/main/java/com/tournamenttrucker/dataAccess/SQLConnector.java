@@ -7,17 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-// server name - INON_PC
-// user name - INON_PC\leino
-
 public class SQLConnector {
-
-//    private static final String connectionUrl = "jdbc:sqlserver://localhost\\MSSQLSERVER;user=yakir;password=&UY^%Tr43e;encrypt=true;trustServerCertificate=true";
-//    private static final String connectionUrl = "jdbc:mysql://localhost:3306/tournaments";
-
-//    private static final String username = "root";
-//    private static final String password = "inon5656";
-//    @Resource(name = "jdbc/myproject")
 
     private static final String connectionUrl = "jdbc:sqlserver://localhost\\MSSQLSERVER;user=yakir;password=u&6yI84HFd36^;encrypt=true;trustServerCertificate=true";
 
@@ -26,7 +16,6 @@ public class SQLConnector {
     private static Connection getManualConnection() throws SQLException {
         if (!initialized) {
             try {
-//                Class.forName("com.mysql.jdbc.Driver");
                 Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
                 initialized = true;
             } catch (ClassNotFoundException e) {
@@ -34,16 +23,59 @@ public class SQLConnector {
             }
         }
 
-        return DriverManager.getConnection(connectionUrl); // , username, password
+        return DriverManager.getConnection(connectionUrl);
     }
 
+    public static String getTeamNameById(int teamId){
+        String teamName = "";
+
+        try (Connection connection = getManualConnection();
+        ){
+            String sqlTeam = "select TeamName from dbo.Teams where Id = ?";
+            PreparedStatement statement = connection.prepareStatement(sqlTeam);
+            statement.setInt(1, teamId);
+            ResultSet resultSet = statement.executeQuery();
+
+           if (resultSet.next())
+           {
+               teamName = resultSet.getString("TeamName");
+           }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return teamName;
+    }
+
+    public static int getTeamIdByName(String teamName)
+    {
+        int teamId = 0;
+        String sqlTeam = "select Id from dbo.Teams where TeamName = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlTeam);
+        ){
+            statement.setString(1, teamName);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next())
+            {
+                teamId = resultSet.getInt("Id");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return teamId;
+    }
     public static int getTournamentIdByName(String tournamentName)
     {
         int tournamentId = 0;
-        try (Connection connection = getManualConnection()
+        String sql = "select Id from dbo.Tournaments where TournamentName = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
         ){
-            String sql = "select Id from dbo.Tournaments where TournamentName = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, tournamentName);
             ResultSet resultSet = statement.executeQuery();
 
@@ -55,15 +87,14 @@ public class SQLConnector {
 
         return tournamentId;
     }
-
     public static TournamentModel getTournamentById(int tournamentId){
         TournamentModel tournament = new TournamentModel();
         tournament.setId(tournamentId);
+        String sql = "select * from dbo.Tournaments where Id = ?";
 
         try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
         ){
-            String sql = "select * from dbo.Tournaments where Id = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, tournamentId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -80,37 +111,88 @@ public class SQLConnector {
 
         return tournament;
     }
-
     public static void createPerson(PersonModel person)
     {
-        try (Connection connection = getManualConnection();
-        ){
-            String sql = "insert into Person(FirstName,LastName,EmailAddress,CellphoneNumber) values(?,?,?,?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
+        String sql = "insert into Person(FirstName,LastName,EmailAddress,CellphoneNumber) values(?,?,?,?)";
 
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
             statement.setString(1,person.getFirstName());
             statement.setString(2,person.getLastName());
             statement.setString(3,person.getEmailAddress());
             statement.setString(4,person.getCellphoneNumber());
             statement.execute();
-//            model.setId(myStmt.getInt(5));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+    public static List<TeamModel> getTournamentTeams(int tournamentId)
+    {
+        List<TeamModel> teams = new ArrayList<>();
+        String sqlTournamentTeams = "select TeamId from dbo.TournamentEntries where TournamentId = ?";
 
-    public static List<MatchupTeamsCompeting> getCurrentRoundMatchupsTeamsNames(int tournamentId, int currentRound){
-        List<MatchupModel> matchupsTeamsIds = new ArrayList<>();
-        List<MatchupTeamsCompeting> matchupsTeamsNames = new ArrayList<>();
-
-        try (Connection connection = getManualConnection()
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlTournamentTeams);
         ){
-            String sqlTeamCompetingIds = "select TeamOneId, TeamTwoId from dbo.Matchups where TournamentId = ? and MatchupRound = ?";
-            PreparedStatement statement = connection.prepareStatement(sqlTeamCompetingIds);
+            statement.setInt(1, tournamentId);
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next())
+            {
+                TeamModel team = new TeamModel();
+                team.setId(resultSet.getInt("TeamId"));
+                teams.add(team);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return teams;
+    }
+    public static MatchupModel getCurrentRoundMatchup(int tournamentId, int currentRound){
+        MatchupModel matchup = new MatchupModel();
+        String sqlMatchup = "select Id,WinnerId,TeamOneId,TeamTwoId,TeamOneScore,TeamTwoScore from dbo.Matchups where TournamentId = ? and MatchupRound = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlMatchup);
+        ){
             statement.setInt(1, tournamentId);
             statement.setInt(2, currentRound);
             ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next())
+            {
+                matchup.setId(resultSet.getInt("Id"));
+                matchup.setTournamentId(tournamentId);
+                matchup.setMatchupRound(currentRound);
+                matchup.setWinnerId(resultSet.getInt("WinnerId"));
+                matchup.setTeamOneId(resultSet.getInt("TeamOneId"));
+                matchup.setTeamTwoId(resultSet.getInt("TeamTwoId"));
+                matchup.setTeamOneScore(resultSet.getInt("TeamOneScore"));
+                matchup.setTeamTwoScore(resultSet.getInt("TeamTwoScore"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return matchup;
+    }
+    public static List<MatchupTeamsCompeting> getCurrentRoundMatchupsTeamsNames(int tournamentId, int currentRound){
+        List<MatchupModel> matchupsTeamsIds = new ArrayList<>();
+        List<MatchupTeamsCompeting> matchupsTeamsNames = new ArrayList<>();
+        String sqlTeamCompetingIds = "select TeamOneId, TeamTwoId from dbo.Matchups where TournamentId = ? and MatchupRound = ?";
+        String sqlTeamCompetingNames = "select TeamName from dbo.Teams where Id = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statementTeamCompetingIds = connection.prepareStatement(sqlTeamCompetingIds);
+             PreparedStatement statementTeamCompetingNames = connection.prepareStatement(sqlTeamCompetingNames);
+        ){
+            statementTeamCompetingIds.setInt(1, tournamentId);
+            statementTeamCompetingIds.setInt(2, currentRound);
+            ResultSet resultSet = statementTeamCompetingIds.executeQuery();
 
             while (resultSet.next())
             {
@@ -120,21 +202,18 @@ public class SQLConnector {
                 matchupsTeamsIds.add(matchup);
             }
 
-
-            String sqlTeamCompetingNames = "select TeamName from dbo.Teams where Id = ?";
-            statement = connection.prepareStatement(sqlTeamCompetingNames);
             String teamOneName = "";
             String teamTwoName = "";
 
             for (MatchupModel matchupTeamId : matchupsTeamsIds)
             {
-                statement.setInt(1, matchupTeamId.getTeamOneId());
-                resultSet = statement.executeQuery();
+                statementTeamCompetingNames.setInt(1, matchupTeamId.getTeamOneId());
+                resultSet = statementTeamCompetingNames.executeQuery();
                 if (resultSet.next())
                     teamOneName = resultSet.getString("TeamName");
 
-                statement.setInt(1, matchupTeamId.getTeamTwoId());
-                resultSet = statement.executeQuery();
+                statementTeamCompetingNames.setInt(1, matchupTeamId.getTeamTwoId());
+                resultSet = statementTeamCompetingNames.executeQuery();
                 if (resultSet.next())
                     teamTwoName = resultSet.getString("TeamName");
 
@@ -148,11 +227,11 @@ public class SQLConnector {
     }
     public static List<MatchupModel> getCurrentRoundMatchupsWinnerId(int tournamentId, int currentRound){
         List<MatchupModel> matchups = new ArrayList<>();
+        String sql = "select WinnerId from dbo.Matchups where TournamentId = ? and MatchupRound = ?";
 
-        try (Connection connection = getManualConnection()
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
         ){
-            String sql = "select WinnerId from dbo.Matchups where TournamentId = ?, CurrentRound = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, tournamentId);
             statement.setInt(2, currentRound);
             ResultSet resultSet = statement.executeQuery();
@@ -169,44 +248,32 @@ public class SQLConnector {
 
         return matchups;
     }
-    public static void updateMatchupsResult(List<MatchupResult> matchupResults){
-        try (Connection connection = getManualConnection();
-        ){
-            ResultSet resultSet;
-            String teamOneName, teamTwoName;
-            int teamOneScore, teamTwoScore,teamOneId ,teamTwoId, winnerId;
+    public static void updateMatchupsResult(List<MatchupResult> matchupResults)
+    {
+        String teamOneName, teamTwoName;
+        int teamOneScore, teamTwoScore,teamOneId ,teamTwoId, winnerId;
+        String sqlInsertMatchupResults = "update dbo.Matchups set WinnerId = ?, TeamOneScore = ?, TeamTwoScore = ? where TeamOneId = ? and TeamTwoId = ?";
 
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlInsertMatchupResults);
+        ){
             for (MatchupResult matchupResult : matchupResults)
             {
                 teamOneName = matchupResult.getTeamOneName();
-                teamTwoName = matchupResult.getTeamOneName();
+                teamTwoName = matchupResult.getTeamTwoName();
                 teamOneScore = matchupResult.getTeamOneScore();
                 teamTwoScore = matchupResult.getTeamTwoScore();
 
-                // get teamOneId by teamOneName
-                String sqlTeamOneId = "select Id from dbo.Teams where TeamName = ?";
-                PreparedStatement statement = connection.prepareStatement(sqlTeamOneId);
-                statement.setString(1, teamOneName);
-                resultSet = statement.executeQuery();
-                teamOneId = resultSet.getInt("Id");
+                // get teamOneId and teamTwoId by teamOneName and teamTwoName
+                teamOneId = getTeamIdByName(teamOneName);
+                teamTwoId = getTeamIdByName(teamTwoName);
 
-                // get teamTwoId by teamTwoName
-                String sqlTeamTwoId = "select Id from dbo.Teams where TeamName = ?";
-                statement = connection.prepareStatement(sqlTeamTwoId);
-                statement.setString(1, teamTwoName);
-                resultSet = statement.executeQuery();
-                teamTwoId = resultSet.getInt("Id");
-
-
-                // assign the winner
+                // assign the winnerId
                 if (teamOneScore > teamTwoScore)
                     winnerId = teamOneId;
                 else
                     winnerId = teamTwoId;
 
-                String sqlInsertMatchupResults = "update dbo.Matchups set WinnerId = ?, TeamOneScore = ?, TeamTwoScore = ? where TeamOneId = ? and TeamTwoId = ?";
-
-                statement = connection.prepareStatement(sqlInsertMatchupResults);
                 statement.setInt(1, winnerId);
                 statement.setInt(2, teamOneScore);
                 statement.setInt(3, teamTwoScore);
@@ -218,25 +285,24 @@ public class SQLConnector {
             throw new RuntimeException(e);
         }
     }
-
     public static void incrementTournamentRound(int tournamentId) {
+        String sql = "update dbo.Tournaments set CurrentRound = CurrentRound + 1 where Id = ?";
+
         try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
         ) {
-            String sql = "update from dbo.Tournaments set CurrentRound = CurrentRound + 1 where TournamentId = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, tournamentId);
             statement.execute();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     public static void createMatchup(int tournamentId, int matchupRound, int teamOneId, int teamTwoId){
-        try (Connection connection = getManualConnection()
-        ){
-            String sql = "insert into dbo.Matchups (TournamentId,MatcupRound,TeamOneId,TeamTwoId) values (?,?,?,?)";
-            PreparedStatement statement = connection.prepareStatement(sql);
+        String sql = "insert into dbo.Matchups (TournamentId,MatchupRound,TeamOneId,TeamTwoId) values (?,?,?,?)";
 
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
             statement.setInt(1, tournamentId);
             statement.setInt(2, matchupRound);
             statement.setInt(3, teamOneId);
@@ -246,12 +312,17 @@ public class SQLConnector {
             throw new RuntimeException(e);
         }
     }
-
     public static void createTeam(String teamName, List<String> teamMembers)
     {
-        try (Connection connection = getManualConnection()
+        String sql = "select Id from dbo.Person where EmailAddress = ?";
+        String sqlTeams = "insert into dbo.Teams(TeamName) values (?)";
+        String sqlTeamMembers = "insert into dbo.TeamMembers(TeamId, PersonId) values (?,?)";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statementPersonId = connection.prepareStatement(sql);
+             PreparedStatement statementTeamName = connection.prepareStatement(sqlTeams, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement statementTeamMembers = connection.prepareStatement(sqlTeamMembers);
         ){
-            PreparedStatement statementPersonId = connection.prepareStatement("select Id from dbo.Person where EmailAddress = ?");
             ResultSet resultSet;
 
             // loop over the teamMembers and find by the email the corresponding personId
@@ -267,9 +338,6 @@ public class SQLConnector {
                     break;
             }
 
-            String sqlTeams = "insert into dbo.Teams(TeamName) values (?)";
-            PreparedStatement statementTeamName = connection.prepareStatement(sqlTeams, Statement.RETURN_GENERATED_KEYS);
-
             statementTeamName.setString(1, teamName);
             statementTeamName.execute();
             resultSet = statementTeamName.getGeneratedKeys();
@@ -277,12 +345,7 @@ public class SQLConnector {
             if (resultSet.next())
             {
                 teamId = resultSet.getInt(1);
-                System.out.println(teamId);
             }
-
-
-            String sqlTeamMembers = "insert into dbo.TeamMembers(TeamId, PersonId) values (?,?)";
-            PreparedStatement statementTeamMembers = connection.prepareStatement(sqlTeamMembers);
 
             for (Integer id: teamMembersIds)
             {
@@ -295,21 +358,19 @@ public class SQLConnector {
             throw new RuntimeException(e);
         }
     }
-
     public static void createTournament(TournamentModel tournament, List<TeamModel> teams)
     {
         saveTournament(tournament);
         saveTournamentTeams(tournament, teams);
     }
-
     private static void saveTournament(TournamentModel tournament)
     {
-        int tournamentId = 0;
-        try (Connection connection = getManualConnection()
+        String sql = "insert into dbo.Tournaments (TournamentName, EntryFee, Active, CurrentRound, PrizeOption) values (?,?,?,?,?)";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
         ){
             ResultSet resultSet;
-            String sql = "insert into dbo.Tournaments (TournamentName, EntryFee, Active, CurrentRound, PrizeOption) values (?,?,?,?,?)";
-            PreparedStatement statement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 
             statement.setString(1, tournament.getTournamentName());
             statement.setDouble(2, tournament.getEntryFee());
@@ -321,22 +382,22 @@ public class SQLConnector {
             resultSet = statement.getGeneratedKeys();
 
             if (resultSet.next())
-                tournamentId = resultSet.getInt(1);
+                tournament.setId(resultSet.getInt(1));
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        tournament.setId(tournamentId); // TODO: check if id still equal 0
     }
-
     private static void saveTournamentTeams(TournamentModel tournament, List<TeamModel> teams)
     {
-        try (Connection connection = getManualConnection()
+        String sqlTeamId = "select Id from dbo.Teams where TeamName = ?";
+        String sqlTournamentEntries = "insert into dbo.TournamentEntries (TournamentId, TeamId) values (?,?)";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statementTeamId = connection.prepareStatement(sqlTeamId);
+             PreparedStatement statementTournamentEntries = connection.prepareStatement(sqlTournamentEntries);
         ) {
             ResultSet resultSet;
-            String sqlTeamId = "select Id from dbo.Teams where TeamName = ?";
-            PreparedStatement statementTeamId = connection.prepareStatement(sqlTeamId);
 
             List<Integer> teamsIds = new ArrayList<>();
             for (TeamModel team: teams)
@@ -349,9 +410,6 @@ public class SQLConnector {
                     break;
             }
 
-            String sqlTournamentEntries = "insert into dbo.TournamentEntries (TournamentId, TeamId) values (?,?)";
-            PreparedStatement statementTournamentEntries = connection.prepareStatement(sqlTournamentEntries);
-
             for (Integer id: teamsIds)
             {
                 statementTournamentEntries.setInt(1, tournament.getId());
@@ -362,10 +420,9 @@ public class SQLConnector {
             throw new RuntimeException(e);
         }
     }
-
-    public static List<PersonModel> getAllPerson()
+    public static List<PersonModel> getAllAvailablePerson()
     {
-        List<PersonModel> output = new ArrayList<>();
+        List<PersonModel> players = new ArrayList<>();
 
         try (Connection connection = getManualConnection();
              Statement statement = connection.createStatement();
@@ -375,27 +432,26 @@ public class SQLConnector {
 
             while (resultSet.next())
             {
-                PersonModel person = new PersonModel();
-                person.setFirstName(resultSet.getString("FirstName"));
-                person.setLastName(resultSet.getString("LastName"));
-                person.setEmailAddress(resultSet.getString("EmailAddress"));
+                PersonModel player = new PersonModel();
+                player.setFirstName(resultSet.getString("FirstName"));
+                player.setLastName(resultSet.getString("LastName"));
+                player.setEmailAddress(resultSet.getString("EmailAddress"));
 
-                output.add(person);
+                players.add(player);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return output;
+        return players;
     }
-
     public static List<TeamModel> getAllAvailableTeams()
     {
         List<TeamModel> teams = new ArrayList<>();
+        String sql = "select TeamName from dbo.Teams where Id not in (select TeamId from dbo.TournamentEntries)";
 
         try (Connection connection = getManualConnection();
              Statement statement = connection.createStatement();
         ){
-            String sql = "select TeamName from dbo.Teams where Id not in (select TeamId from dbo.TournamentEntries)";
             ResultSet resultSet = statement.executeQuery(sql);
             while (resultSet.next()) {
                 TeamModel team = new TeamModel();
@@ -408,14 +464,14 @@ public class SQLConnector {
 
         return teams;
     }
-
     public static List<String> getAllActiveTournaments()
     {
         List<String> output = new ArrayList<>();
+        String sql = "select TournamentName from dbo.Tournaments where Active = 1;";
+
         try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
         ) {
-            String sql = "select * from dbo.Tournaments where Active = 1;";
-            PreparedStatement statement = connection.prepareStatement(sql);
             statement.execute();
             ResultSet result = statement.getResultSet();
 
@@ -428,19 +484,128 @@ public class SQLConnector {
         }
         return output;
     }
-
     public static void completeTournament(TournamentModel tournament)
     {
-        try (Connection connection = DriverManager.getConnection(connectionUrl)
-        ){
-            String sql = "update dbo.Tournaments set Active = 0 where id = ?";
-            PreparedStatement statement = connection.prepareStatement(sql);
+        String sql = "update dbo.Tournaments set Active = 0 where id = ?";
 
+        try (Connection connection = DriverManager.getConnection(connectionUrl);
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
             statement.setInt(1, tournament.getId());
-            statement.executeQuery();
+            statement.execute();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+    // deletes tournament entries and matchups and tournamentId
+    public static void deleteTournament(int tournamentId)
+    {
+        String sqlDeleteEntries = "delete from dbo.TournamentEntries where TournamentId = ?";
+        String sqlDeleteMatchups = "delete from dbo.Matchups where TournamentId = ?";
+        String sqlDeleteTournament = "delete from dbo.Tournaments where Id = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlDeleteEntries);
+             PreparedStatement statementDeleteMatchups = connection.prepareStatement(sqlDeleteMatchups);
+             PreparedStatement statementDeleteTournament = connection.prepareStatement(sqlDeleteTournament);
+        ){
+            statement.setInt(1, tournamentId);
+            statement.execute();
+
+            statementDeleteMatchups.setInt(1, tournamentId);
+            statementDeleteMatchups.execute();
+
+            statementDeleteTournament.setInt(1, tournamentId);
+            statementDeleteTournament.execute();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean checkPlayersExist(List<String> teamMembersEmails)
+    {
+        String sql = "select * from dbo.Person where EmailAddress = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            ResultSet resultSet;
+
+            for (String email : teamMembersEmails)
+            {
+                statement.setString(1, email);
+                resultSet = statement.executeQuery();
+
+                if (!resultSet.next())
+                    return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return true;
+    }
+
+    public static boolean checkTeamsExist(List<String> teams)
+    {
+        String sql = "select * from dbo.Teams where TeamName = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            ResultSet resultSet;
+
+            for (String team : teams)
+            {
+                statement.setString(1, team);
+                resultSet = statement.executeQuery();
+
+                if (!resultSet.next())
+                    return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return true;
+    }
+
+    public static boolean checkMatchupsExist(int tournamentId, int matchupRound, List<MatchupResult> matchups)
+    {
+        String sql = "select TeamOneId,TeamTwoId from dbo.Matchups where TournamentId = ? and MatchupRound = ? and TeamOneId = ? and TeamTwoId = ?";
+
+        try (Connection connection = getManualConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+        ){
+            ResultSet resultSet;
+
+            for (MatchupResult matchup : matchups)
+            {
+                statement.setInt(1, tournamentId);
+                statement.setInt(2, matchupRound);
+                statement.setString(3, matchup.getTeamOneName());
+                statement.setString(4, matchup.getTeamTwoName());
+                resultSet = statement.executeQuery();
+
+                if (!resultSet.next())
+                    return false;
+
+                int teamOneId = resultSet.getInt("TeamOneId");
+                int teamTwoId = resultSet.getInt("TeamTwoId");
+                String teamOneName = getTeamNameById(teamOneId);
+                String teamTwoName = getTeamNameById(teamTwoId);
+
+                if (!(matchup.getTeamOneName().equals(teamOneName) && matchup.getTeamTwoName().equals(teamTwoName)))
+                    return false;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return true;
+    }
 }

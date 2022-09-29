@@ -13,29 +13,28 @@
     <form id="tournamentViewerForm" name="tournamentViewerForm">
         <div class="division under">
             <label style="padding: 20px;">Tournament: </label><label id="tournamentName" name="tournamentName"></label>
-            <label style="padding: 10px;  top:2px;">Round</label><label id="roundNumber" name="roundNumber"></label>
+            <label style="padding: 10px;">Round: </label><label id="roundNumber" name="roundNumber"></label>
             <div style="display: block; padding: 0px 4px 0px 6px;">
-                <label >Unplayed Games</label><br>
+                <label style="margin-top: 20px">Unplayed Games</label><br>
                 <select id="unplayedMatchupList" style="width: 220px; font-size: medium;" size="10"></select>
                 <label>Played Games</label>
-                <select id="round" style="width: 220px; margin: 5px"></select>
                 <select id="playedMatchupList" style="width: 220px; margin-top: 0px; font-size: medium;" size="10"></select>
             </div>
         </div>
         <div class="division">
-            <label id="teamOneName">Not yet set</label><br>
+            <label id="teamOneName" style="margin-top: 150px">Not yet set</label><br>
             <label>Score</label>
             <input type="text" id="teamOneScore" name="teamOneScore">
             <label style="padding: 10%;">-VS-</label><br>
             <label id="teamTwoName">Not yet set</label><br>
             <label>Score</label>
             <input type="text" id="teamTwoScore" name="teamTwoScore">
-            <input id="sendRound" name="sendRound" class="create_buttons" style="font-weight: bold;" type="button" value="Send Round" onclick="sendRoundClicked()">
-            <input id="getNextRound" name="getNextRound" class="create_buttons" style="font-weight: bold;" type="button" value="Get Next Round" onclick="getNextRoundClicked()">
+            <input class="create_buttons" style="font-weight: bold;" type="button" value="Score" onclick="scoreButtonClicked()">
         </div>
         <div class="division">
             <label id="winner" style="position: absolute; padding-left: 100px; top:5%; font-weight: bold;"></label>
-            <input class="create_buttons" style="margin: 40%; font-weight: bold;" type="button" value="Score" onclick="scoreButtonClicked()">
+            <input id="sendRound" name="sendRound" class="create_buttons" style="margin-top: 250px;font-weight: bold;" type="button" value="Send Round" onclick="sendRoundClicked()">
+            <input id="getNextRound" name="getNextRound" class="create_buttons" style="font-weight: bold;" type="button" value="Get Next Round" onclick="getNextRoundClicked()">
         </div>
     </form>
 </body>

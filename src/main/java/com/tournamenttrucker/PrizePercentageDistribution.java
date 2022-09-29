@@ -1,15 +1,8 @@
-package com.tournamenttrucker.models;
+package com.tournamenttrucker;
 
 public class PrizePercentageDistribution {
     private int first;
     private int second;
-//    private int third;
-
-//    public PrizePercentageDistribution(int first, int second, int third) {
-//        this.first = first;
-//        this.second = second;
-//        this.third = third;
-//    }
 
 
     public PrizePercentageDistribution(int first, int second) {

@@ -1,4 +1,4 @@
-package com.tournamenttrucker.models;
+package com.tournamenttrucker;
 
 import java.util.HashMap;
 import java.util.Map;

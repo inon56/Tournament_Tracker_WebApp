@@ -1,7 +1,5 @@
 package com.tournamenttrucker.models;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class TeamModel {
     private int id;

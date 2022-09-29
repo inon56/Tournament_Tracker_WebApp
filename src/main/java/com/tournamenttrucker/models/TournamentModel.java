@@ -1,8 +1,6 @@
 package com.tournamenttrucker.models;
 
-import com.google.gson.annotations.Expose;
-import java.util.ArrayList;
-import java.util.List;
+import com.tournamenttrucker.PrizePercentageDistribution;
 
 public class TournamentModel {
     private int id;

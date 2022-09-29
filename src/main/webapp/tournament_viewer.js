@@ -1,12 +1,24 @@
 
 let unplayedMatchups = {};
 
+let roundToPost =
+    {
+        "tournamentName": "",
+        "round": 0,
+        "matchupsResults": []
+    }
+
 let playedMatchups =
     {
         "tournamentName": "",
         "round": 0,
-        "matchups": []
+        "matchupsResults": []
     };
+
+window.onload = () => {
+    document.getElementById("sendRound").style.visibility = 'hidden';
+    getRound();
+}
 
 
 const tournamentName = sessionStorage.getItem("tournamentName");
@@ -30,24 +42,32 @@ selectMatchupList.addEventListener('change', (event) =>
 function getNextRoundClicked()
 {
     if (unplayedMatchups['matchups'].length === 0)
+    {
         getRound();
+        let tournamentName = unplayedMatchups['tournamentName'];
+        let round = unplayedMatchups['round'];
+
+        roundToPost =
+            {
+                "tournamentName": tournamentName,
+                "round": round,
+                "matchupsResults": []
+            };
+    }
+
     else
         alert("Please fill in all the matchups before getting the next round");
 }
 
-window.onload = () => {
-    getRound();
-}
 
 // GET Rounds
-function getRound() // export?
+function getRound()
 {
-    fetch("tournamentViewerServlet?" + new URLSearchParams({tournamentName: tournamentName}), {
+    fetch("tournamentViewerServlet?" + new URLSearchParams({tournamentName: tournamentName}), { // send message with GET
         method: "GET"
     })
     .then(res => {return res.json()})
     .then((data) => {
-        console.log(data);
         updateRoundList(data);
     })
     .then(() => {
@@ -56,10 +76,12 @@ function getRound() // export?
     .catch((error) => alert(error))
 }
 
-function updateRoundList(roundMatchups)
+function updateRoundList(data)
 {
-    unplayedMatchups = roundMatchups
+    unplayedMatchups = data;
     document.getElementById("roundNumber").innerHTML = unplayedMatchups['round'];
+    roundToPost["tournamentName"] = unplayedMatchups['tournamentName'];
+    roundToPost["round"] = unplayedMatchups['round'];
     playedMatchups["tournamentName"] = unplayedMatchups['tournamentName'];
     playedMatchups["round"] = unplayedMatchups['round'];
 }
@@ -82,7 +104,7 @@ function scoreButtonClicked()
         alert("option not selected");
         return false;
     }
-    // let matchText = selectMatchupList.options[selectMatchupList.selectedIndex].text;
+
     const array = matchupText.split(" vs ");
     let teamOneName = document.getElementById('teamOneName').innerHTML = array[0];
     let teamTwoName = document.getElementById('teamTwoName').innerHTML = array[1];
@@ -94,10 +116,19 @@ function scoreButtonClicked()
     {
         // push into played matchups
         let playedMatchup = {"teamOneName": teamOneName, "teamTwoName": teamTwoName, "teamOneScore": teamOneScore, "teamTwoScore": teamTwoScore};
-        playedMatchups['matchups'].push(playedMatchup);
+        roundToPost['matchupsResults'].push(playedMatchup);
+        playedMatchups['matchupsResults'].push(playedMatchup);
 
         // remove from unplayed matchups
-        unplayedMatchups = unplayedMatchups['matchups'].filter(matchup => matchup.teamOneName === teamOneName);
+        let matchupIndex;
+        unplayedMatchups['matchups'].filter(function(item, index)
+            {
+                matchupIndex = index;
+                return item.teamOneName === teamOneName;
+            });
+
+        unplayedMatchups['matchups'].splice(matchupText, 1);
+
 
         if (teamOneScore > teamTwoScore) {
             winner.innerHTML = document.getElementById("teamOneName").innerHTML + " wins!";
@@ -118,11 +149,11 @@ function scoreButtonClicked()
         // remove from unplayed matchups select box
         selectMatchupList.options[selectMatchupList.selectedIndex].remove();
         selectMatchupList.value = '';
+
+        if (unplayedMatchups['matchups'].length === 0)
+            document.getElementById("sendRound").style.visibility = 'visible';
     }
 }
-
-
-
 
 function validateScores(teamOneScore, teamTwoScore)
 {
@@ -141,23 +172,25 @@ function validateScores(teamOneScore, teamTwoScore)
 
 function sendRoundClicked()
 {
-    if (playedMatchups['matchups'].length === 0)
-        postRound();
-    else
-        alert("Please fill in all the matchups before sending");
+    document.getElementById("sendRound").style.visibility = 'hidden';
+    postRound();
 
 }
 
 function postRound()
 {
-    // const data = {"tournamentName": tournamentName, "round": 1, "matchups": {"teamOne": "aaa", "teamTwo": "bbb", "teamOneScore": 5, "teamTwoScore": 8}};
-
     fetch("tournamentViewerServlet", {
         method: 'POST',
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(playedMatchups)
+        body: JSON.stringify(roundToPost)
     })
-    .then(res => {return res.json()})
+    .then(res => {
+        if (res.ok) {
+            return res.text();
+        }
+        else
+            return "status code: 400";
+    })
     .then((text) => alert(text))
     .catch((error) => alert(error))
 }
