@@ -6,8 +6,8 @@ function createPlayerClicked()
     let email = document.getElementById("email").value;
     let cellphone = document.getElementById("cellphone").value;
 
-    // if (validateCreatePlayer(firstName, lastName, email, cellphone))
-    // {
+    if (validateCreatePlayer(firstName, lastName, email, cellphone))
+    {
         const player = {
             "firstName" : firstName,
             "lastName" : lastName,
@@ -18,7 +18,7 @@ function createPlayerClicked()
         postPlayer(player);
 
         clearPlayerFields();
-    // }
+    }
 }
 
 
@@ -52,6 +52,12 @@ function validateCreatePlayer(firstName, lastName, email, cellphone)
         return false;
     }
 
+    if (cellphone.length !== 10)
+    {
+        alert("Invalid cellphone, please insert 10 digits number")
+        return false;
+    }
+
     return true;
 }
 
@@ -63,6 +69,7 @@ function clearPlayerFields()
     document.getElementById("cellphone").value = "";
 }
 
+// POST
 function postPlayer(data)
 {
     fetch("personServlet", {

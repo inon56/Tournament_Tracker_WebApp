@@ -10,7 +10,7 @@ import java.util.Properties;
 
 public class EmailLogic {
 
-    public static void sendEmail(TournamentModel tournament,String teamName, List<PersonModel> players, Double prize)
+    public static void sendEmail(String tournamentName, String teamName, List<PersonModel> players, Double prize)
     {
         final String SSL_FACTORY = "javax.net.ssl.SSLSocketFactory";
         // Get a Properties object
@@ -25,8 +25,7 @@ public class EmailLogic {
         props.put("mail.store.protocol", "pop3");
         props.put("mail.transport.protocol", "smtp");
         final String username = "leino333@gmail.com";//
-        //TODO: add password
-        final String password = "";
+        final String password = ""; // Add a password
 
         // Sender's email ID needs to be mentioned
         String from = "leino333@gmail.com";
@@ -42,12 +41,12 @@ public class EmailLogic {
             // Create a new message
             Message  message = new MimeMessage(session);
 
-            for (PersonModel player : players)
-            {
+//            for (PersonModel player : players)
+//            {
                 // Set To: header field of the header.
 //                to = player.getEmailAddress();
                 message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
-            }
+//            }
 
             String subject = "Tournament completed";
             StringBuilder body = new StringBuilder();
@@ -56,7 +55,7 @@ public class EmailLogic {
             body.append(" team player");
             body.append("\n");
             body.append("Thank you for participating in the tournament: ");
-            body.append(tournament.getTournamentName());
+            body.append(tournamentName);
             body.append("\n");
             body.append("Your team won the prize: ");
             body.append(prize);
@@ -71,7 +70,6 @@ public class EmailLogic {
 
             // Send message
             Transport.send(message);
-            System.out.println("Sent message successfully...." + body);
 
         } catch (MessagingException mex) {
             mex.printStackTrace();

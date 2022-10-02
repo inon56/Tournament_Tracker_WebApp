@@ -17,13 +17,6 @@ public class SubmitRoundResultRequest {
         this.tournamentName = tournamentName;
     }
 
-    public void setRound(int round) {
-        this.round = round;
-    }
-
-    public void setMatchupsResults(List<MatchupResult> matchupsResults) {
-        this.matchupsResults = matchupsResults;
-    }
 
     public List<MatchupResult> getMatchupsResults() {
         return matchupsResults;
@@ -37,4 +30,12 @@ public class SubmitRoundResultRequest {
         return tournamentName;
     }
 
+    @Override
+    public String toString() {
+        return "SubmitRoundResultRequest{" +
+                "tournamentName='" + tournamentName + '\'' +
+                ", round=" + round +
+                ", matchupsResults=" + matchupsResults.toString() +
+                '}';
+    }
 }

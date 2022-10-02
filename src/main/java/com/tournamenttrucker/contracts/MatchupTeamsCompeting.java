@@ -10,11 +10,4 @@ public class MatchupTeamsCompeting {
         this.teamTwoName = teamTwoName;
     }
 
-    public void setTeamOneName(String teamOneName) {
-        this.teamOneName = teamOneName;
-    }
-
-    public void setTeamTwoName(String teamTwoName) {
-        this.teamTwoName = teamTwoName;
-    }
 }

@@ -58,21 +58,6 @@ public class TournamentLogic {
         }
     }
 
-    private static Map<Integer, Double> calculatePrizePayout(TournamentModel tournament, int winningTeam, int prizeOption)
-    {
-        Map<Integer, Double> prizes = new HashMap<>();
-
-        double totalIncome = winningTeam * tournament.getEntryFee();
-        PrizePercentageDistribution prizeDistribution = PrizeGenerator.getPrizeOptions().get(prizeOption);
-
-        double firstPlacePrize = prizeDistribution.getFirst() * totalIncome;
-        double secondPlacePrize = prizeDistribution.getFirst() * totalIncome;
-        prizes.put(1, firstPlacePrize);
-        prizes.put(2, secondPlacePrize);
-
-        return prizes;
-    }
-
     public static void completeTournament(TournamentModel tournament, int currentRound)
     {
         // set tournament Active = 0 , meaning it is completed
@@ -103,15 +88,30 @@ public class TournamentLogic {
         }
 
         // get prizes layout
-        Map<Integer, Double> prizes = calculatePrizePayout(tournament, winningTeams.size(), tournament.getPrizeOption());
+        List<TeamModel> teams = SQLConnector.getTournamentTeams(tournament.getId());
+        Map<Integer, Double> prizes = calculatePrizePayout(tournament.getEntryFee(), teams.size(), tournament.getPrizeOption());
 
-        // TODO: send emails
-//        for (int i = 1; i < winningTeams.size() + 1; i++)
-//        {
-//            List<PersonModel> players = SQLConnector.getAllTeamMembers(winningTeams.get(i).getId());
-//
-//            EmailLogic.sendEmail(tournament,winningTeams.get(i).getTeamName(), players, prizes.get(i));
-//        }
+        for (int i = 1; i < winningTeams.size() + 1; i++)
+        {
+            List<PersonModel> players = SQLConnector.getAllTeamMembers(winningTeams.get(i).getId());
+
+//            EmailLogic.sendEmail(tournament.getTournamentName(),winningTeams.get(i).getTeamName(), players, prizes.get(i));
+        }
+    }
+
+    public static Map<Integer, Double> calculatePrizePayout(double entryFee, int numTournamentTeams, int prizeOption)
+    {
+        Map<Integer, Double> prizes = new HashMap<>();
+
+        double totalIncome = numTournamentTeams * entryFee;
+        PrizePercentageDistribution prizeDistribution = PrizeGenerator.getPrizeOptions().get(prizeOption);
+
+        double firstPlacePrize = prizeDistribution.getFirst() * totalIncome / 100;
+        double secondPlacePrize = prizeDistribution.getSecond() * totalIncome / 100;
+        prizes.put(1, firstPlacePrize);
+        prizes.put(2, secondPlacePrize);
+
+        return prizes;
     }
 
 }

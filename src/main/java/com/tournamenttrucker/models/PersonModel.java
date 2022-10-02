@@ -36,10 +36,6 @@ public class PersonModel {
     public void setCellphoneNumber(String cellphoneNumber) {
         this.cellphoneNumber = cellphoneNumber;
     }
-
-
-
-
     public int getId() {
         return id;
     }
@@ -59,17 +55,6 @@ public class PersonModel {
     public String getCellphoneNumber() {
         return cellphoneNumber;
     }
-
-    @Override
-    public String toString() {
-        return
-                "{ firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                ", cellphoneNumber='" + cellphoneNumber + '\'' +
-                '}';
-    }
-
 
     public void setId(int id) {
         this.id = id;

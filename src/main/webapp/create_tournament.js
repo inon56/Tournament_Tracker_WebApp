@@ -6,6 +6,7 @@ window.onload = () => {
     getTournament();
 }
 
+// GET
 function getTournament()
 {
     fetch("tournamentServlet", {
@@ -58,20 +59,22 @@ function populatePrizeOptionsDropDownList()
     let prizes = document.getElementById("prizeOptionsList");
     let txt = "";
     let concatTxt ="";
+    let numOption = 1;
 
     for (const prize of prizesList)
     {
         let option = document.createElement("option");
-        concatTxt += "option " // TODO: add the number , needed for the post
+        concatTxt += `option ${numOption} `;
 
         for (const [key, val] of Object.entries(prize))
         {
-            txt = (`${key}: ${val} `);
+            txt = (`${key}: ${val}% `);
             concatTxt += txt;
         }
         option.text = concatTxt;
         prizes.add(option);
         concatTxt ="";
+        numOption++;
     }
 }
 
@@ -120,11 +123,8 @@ function createTournamentClicked()
 {
     let tournamentName = document.getElementById("tournamentName").value;
     let entryFee = document.getElementById("entryFee").value;
-    // let txt = document.getElementById("prizeOptionsList").value.split(" ",2); // string
-    // let prizeOption = 2// txt[1];
-
-    let index = document.getElementById("prizeOptionsList").value.split(" ",2);
-    let prizeOption = prizesList.indexOf(index);
+    let txt = document.getElementById("prizeOptionsList").value.split(" ",2); // string
+    let prizeOption = txt[1];
 
     if (validateCreateTournament(tournamentName, entryFee, prizeOption))
     {
@@ -160,6 +160,7 @@ function validateCreateTournament(tournamentName, entryFee)
     return true;
 }
 
+// POST
 function postTournament(tournamentName, entryFee, prizeOption)
 {
     const tournament = {"tournamentName": tournamentName, "entryFee": entryFee, "enteredTeams": enteredTeams, "prizeOption": prizeOption};

@@ -1,4 +1,3 @@
-// import {getRound} from "./tournament_viewer";
 
 window.onload = () => {
     getExistingTournaments();
@@ -13,6 +12,7 @@ function loadTournamentClicked()
     window.open('tournament_viewer.html')
 }
 
+// GET
 function getExistingTournaments()
 {
     fetch("tournamentDashboardServlet", {
@@ -20,13 +20,13 @@ function getExistingTournaments()
     })
     .then(res => {return res.json()})
     .then((data) => {
-        populateTournamentsDropDown(data);
+        populateTournamentsDropDownList(data);
     })
-    .catch((error) => alert(error + "get"))
+    .catch((error) => alert(error))
 }
 
 
-function populateTournamentsDropDown(data)
+function populateTournamentsDropDownList(data)
 {
     for (let tournament of data)
     {
@@ -42,14 +42,21 @@ function deleteTournament()
     let tournaments = document.getElementById("tournamentList");
     let tournamentName = tournaments.options[tournaments.selectedIndex].text;
 
+    // POST
     fetch("tournamentDashboardServlet", {
         method: 'POST',
         headers: { "content-type": "application/text" },
         body: JSON.stringify(tournamentName)
     })
-        .then(res => {return res.text()})
-        .then((text) => alert(text + "\nplease reload the page!"))
-        .catch((error) => alert(error))
+    .then(res => {
+        if (res.ok) {
+            return res.text();
+        }
+        else
+            return "status code: 400";
+    })
+    .then((text) => alert(text + "\nplease reload the page!"))
+    .catch((error) => alert(error))
 }
 
 

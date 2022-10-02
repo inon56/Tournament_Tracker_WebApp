@@ -48,10 +48,8 @@ public class TournamentServlet extends HttpServlet {
         }
         reader.close();
 
-        System.out.println(sb);
         Gson gson = new Gson();
         CreateTournamentRequest tournamentRequest = gson.fromJson(sb.toString(), CreateTournamentRequest.class);
-
 
         if (!validateInput(res, tournamentRequest))
             return;

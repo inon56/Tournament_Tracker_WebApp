@@ -5,6 +5,7 @@ window.onload = () => {
     getPlayers();
 }
 
+// GET
 function getPlayers()
 {
     fetch("teamServlet", {
@@ -15,7 +16,7 @@ function getPlayers()
         updatePlayersLists(data);
     })
     .then(() => {
-        populatePlayersDropDown()
+        populatePlayersDropDownList()
     })
     .catch((error) => alert(error))
 }
@@ -27,7 +28,7 @@ function updatePlayersLists(players)
     availablePlayersList = players;
 }
 
-function populatePlayersDropDown()
+function populatePlayersDropDownList()
 {
     let players = document.getElementById("playersList");
 
@@ -45,7 +46,6 @@ function populatePlayersDropDown()
 function addSelectedPlayerClicked()
 {
     let playerSelected = document.getElementById("playersList");
-    let playerValue = playerSelected.value;
     let playerText = playerSelected.options[playerSelected.selectedIndex].text;
     playerSelected.remove(playerSelected.selectedIndex);
 
@@ -63,8 +63,6 @@ function addSelectedPlayerClicked()
     })
 
     // update lists
-    // teamPlayersList.push(playerValue);
-
     if (playerIndex !== -1)
     {
         let player = availablePlayersList.splice(playerIndex, 1)[0];
@@ -76,7 +74,6 @@ function addSelectedPlayerClicked()
 function removeSelectedTeamPlayerClicked()
 {    
     let playerSelected = document.getElementById("teamPlayersList");
-    let playerValue = playerSelected.value;
     let playerText = playerSelected.options[playerSelected.selectedIndex].text;
     playerSelected.remove(playerSelected.selectedIndex);
 
@@ -139,6 +136,7 @@ function validateCreateTeam(teamName)
 }
 
 // { "teamName": "name", "teamMembersEmails": ["email_1", "email_2", "email_3"] }
+// POST
 function postTeam(team)
 {
 	fetch("teamServlet", {

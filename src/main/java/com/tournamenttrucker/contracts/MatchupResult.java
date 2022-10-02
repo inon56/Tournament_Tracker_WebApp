@@ -9,22 +9,6 @@ public class MatchupResult {
     public MatchupResult() {
     }
 
-    public void setTeamOneName(String teamOneName) {
-        this.teamOneName = teamOneName;
-    }
-
-    public void setTeamTwoName(String teamTwoName) {
-        this.teamTwoName = teamTwoName;
-    }
-
-    public void setTeamOneScore(int teamOneScore) {
-        this.teamOneScore = teamOneScore;
-    }
-
-    public void setTeamTwoScore(int teamTwoScore) {
-        this.teamTwoScore = teamTwoScore;
-    }
-
     public String getTeamOneName() {
         return teamOneName;
     }
@@ -48,4 +32,13 @@ public class MatchupResult {
         this.teamTwoScore = teamTwoScore;
     }
 
+    @Override
+    public String toString() {
+        return "MatchupResult{" +
+                "teamOneName='" + teamOneName + '\'' +
+                ", teamTwoName='" + teamTwoName + '\'' +
+                ", teamOneScore=" + teamOneScore +
+                ", teamTwoScore=" + teamTwoScore +
+                '}';
+    }
 }

@@ -52,7 +52,6 @@ public class TournamentViewerServlet extends HttpServlet {
         Gson gson = new Gson();
         SubmitRoundResultRequest roundRequest = gson.fromJson(sb.toString(), SubmitRoundResultRequest.class);
 
-
         if (!(validateInput(res, roundRequest)))
             return;
 
@@ -67,21 +66,18 @@ public class TournamentViewerServlet extends HttpServlet {
 
         int currentRound = roundRequest.getRound();
         // check if round input is match to the current tournament round
-        if (tournament.getCurrentRound() - 1 != currentRound){
+        if (tournament.getCurrentRound() != currentRound){
             res.sendError(400);
             return;
         }
 
-        if (checkInputInDB(res, tournamentId, currentRound, roundRequest.getMatchupsResults()))
+        if (!(checkInputInDB(res, tournamentId, currentRound, roundRequest.getMatchupsResults())))
             return;
-
 
         // update matchup results with scores, and update the winnerId
         SQLConnector.updateMatchupsResult(roundRequest.getMatchupsResults());
 
-        
         String output = "";
-
         // tournament completed
         if (roundRequest.getMatchupsResults().size() == 1)
         {
@@ -89,7 +85,7 @@ public class TournamentViewerServlet extends HttpServlet {
             // get teams in this matchup and give out prizes
             TournamentLogic.completeTournament(tournament, currentRound);
         } else {
-            output = "Round " + tournament.getCurrentRound() + " completed";
+            output = "Round: " + tournament.getCurrentRound() + " completed";
             SQLConnector.incrementTournamentRound(tournament.getId());
             TournamentLogic.createNextRound(tournament.getId());
         }

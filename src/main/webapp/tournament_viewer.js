@@ -44,6 +44,7 @@ function getNextRoundClicked()
     if (unplayedMatchups['matchups'].length === 0)
     {
         getRound();
+
         let tournamentName = unplayedMatchups['tournamentName'];
         let round = unplayedMatchups['round'];
 
@@ -60,7 +61,7 @@ function getNextRoundClicked()
 }
 
 
-// GET Rounds
+// GET
 function getRound()
 {
     fetch("tournamentViewerServlet?" + new URLSearchParams({tournamentName: tournamentName}), { // send message with GET
@@ -177,6 +178,7 @@ function sendRoundClicked()
 
 }
 
+// POST
 function postRound()
 {
     fetch("tournamentViewerServlet", {
@@ -186,6 +188,7 @@ function postRound()
     })
     .then(res => {
         if (res.ok) {
+            console.log("ok")
             return res.text();
         }
         else

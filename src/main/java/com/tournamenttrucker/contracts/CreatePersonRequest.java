@@ -30,13 +30,4 @@ public class CreatePersonRequest {
         return cellphoneNumber;
     }
 
-    @Override
-    public String toString() {
-        return "CreatePersonRequest{" +
-                "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                ", cellphoneNumber='" + cellphoneNumber + '\'' +
-                '}';
-    }
 }

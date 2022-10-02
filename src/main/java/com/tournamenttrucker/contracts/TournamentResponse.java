@@ -16,8 +16,4 @@ public class TournamentResponse {
         prizeOptions = PrizeGenerator.Generate();
     }
 
-    public Map<Integer, PrizePercentageDistribution> getPrizeOptions() {
-
-        return prizeOptions;
-    }
 }

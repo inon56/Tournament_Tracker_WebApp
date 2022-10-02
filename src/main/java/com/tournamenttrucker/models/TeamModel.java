@@ -1,6 +1,5 @@
 package com.tournamenttrucker.models;
 
-
 public class TeamModel {
     private int id;
     private String teamName;
@@ -37,12 +36,4 @@ public class TeamModel {
         return teamName;
     }
 
-
-
-    @Override
-    public String toString() {
-        return "TeamModel{" +
-                "teamName='" + teamName + '\'' +
-                '}';
-    }
 }
